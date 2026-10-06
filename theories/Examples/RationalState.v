@@ -15,7 +15,7 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From ITree.Events Require Import State.
 From ITree.Indexed Require Import Sum.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend.Common Require Import FiniteEnum.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
 From PTree.Interp Require Import State.
 From PTree.Execution Require Import Runner.
@@ -24,11 +24,8 @@ Import GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
 Definition attempt_entries : list (rat * bool) := [(3^-1,true); (2^-1,false)].
-Lemma attempt_nonnegative : finite_nonnegative attempt_entries.
-Proof. intros p b [H|[H|[]]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma attempt_bounded : finite_expect (λ _, 1) attempt_entries <= 1.
-Proof. native_compute. reflexivity. Qed.
-Definition attempt_coin : SubEnumQ bool := subenumQ_of_list attempt_nonnegative attempt_bounded.
+Definition attempt_coin : SubEnumQ bool.
+Proof. finite_distribution attempt_entries. Defined.
 
 CoFixpoint rational_attempts : ptree (stateE nat +' void1) SubEnumQ unit :=
   Vis (inl1 (Get nat)) (λ s,

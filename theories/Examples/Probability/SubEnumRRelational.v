@@ -48,10 +48,11 @@ Proof. reflexivity. Qed.
     duplicate-free representation, nor an inhabited carrier. *)
 Definition duplicated_half : M bool.
 Proof.
-  refine (@subenumR_of_list R bool [(1/4,true); (1/4,true); (0,false)] _ _).
-  - intros p b [H|[H|[H|[]]]]; inversion H; subst;
-      first [exact: lexx | apply divr_ge0; first [exact: ler01 | exact: ler0n]].
-  - cbn; rewrite !mulr1 add0r addr0 -mulr2n -mulr_natl.
+  finite_distribution [(1/4,true); (1/4,true); (0,false)].
+  - by apply divr_ge0; [exact: ler01 | exact: ler0n].
+  - by apply divr_ge0; [exact: ler01 | exact: ler0n].
+  - exact: lexx.
+  - rewrite -mulr2n -mulr_natl.
     rewrite mulrA mulr1 ler_pdivrMr ?ltr0n // mul1r; exact: ler_nat.
 Defined.
 

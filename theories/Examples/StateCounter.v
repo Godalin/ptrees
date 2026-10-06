@@ -15,7 +15,7 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From ITree.Events Require Import State.
 From ITree.Indexed Require Import Sum.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend.Common Require Import FiniteEnum.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
 From PTree.Interp Require Import State StateFacts.
 From PTree.Eq Require Import PStruct.
@@ -26,13 +26,8 @@ Local Open Scope ring_scope.
 Set Implicit Arguments.
 
 Definition coin_entries : list (rat * bool) := [(2^-1,false);(2^-1,true)].
-Lemma coin_nonnegative : finite_nonnegative coin_entries.
-Proof.
-  intros p b [H|[H|[]]]; inversion H; subst; native_compute; reflexivity.
-Qed.
-Lemma coin_bounded : finite_expect (λ _, 1) coin_entries <= 1.
-Proof. native_compute. reflexivity. Qed.
-Definition coin : SubEnumQ bool := subenumQ_of_list coin_nonnegative coin_bounded.
+Definition coin : SubEnumQ bool.
+Proof. finite_distribution coin_entries. Defined.
 
 Definition tick : ptree (stateE nat +' void1) SubEnumQ bool :=
   Vis (inl1 (Get nat)) (λ s,

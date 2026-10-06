@@ -48,6 +48,11 @@ weights cannot produce a completed definition without a validity proof.
 This is finite representation infrastructure, not a construction operation
 assumed of every `SemanticMeasure`.
 
+Examples use this constructor for bounded list literals, including partial
+and duplicate-weight distributions and the polymorphic pGCL Bernoulli coin.
+An existing `EnumQ` analysis object is still embedded with `enumQ_as_subprob`:
+that bridge preserves the original object rather than reconstructing its list.
+
 | Case | Read first | Further endpoints / boundaries |
 |---|---|---|
 | [StateRewrite](../theories/Examples/StateRewrite.v) | `source_program_rewrite`, `rewrite_then_handle` | State interpretation and concrete execution hooks. Equal behavior is not same-fuel or same-entropy execution. |
@@ -398,6 +403,14 @@ whole-program rewrite case. Read its actual controller programs, then
 `Rewriting.factory_controller_program_rewrite`: sampler refinement, handler
 and State equations compose inside the infinite device service. The private
 sampling analysis is reused, not re-proved as part of the rewrite chain.
+The short `Facts` corollaries likewise import `FreeOmegaRewriting`: bind,
+iteration, State and Exception congruences come from the library, with no
+controller-specific Proper registrations. The pointwise step equation is
+rewritten under iteration; the resulting service equation is rewritten under
+the handler stack.
+`Observation.mode_measure_probability` uses pointwise finite-expectation
+extensionality rather than function equality; its proof is closed under the
+global context.
 `Observation.factory_next_action_probability` is a separate quantitative result;
 scripted and live extraction execute the named programs rather than reimplementing
 the algorithm. See [Execution](EXECUTION.md) for runtime trust limits.

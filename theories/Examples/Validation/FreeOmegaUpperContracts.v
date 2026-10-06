@@ -3,6 +3,7 @@ From Coq Require Import Utf8.
 
 Set Warnings "-notation-overridden,-ambiguous-paths".
 
+From PTree.Prob.Backend.Common Require Import FiniteSubdist.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
@@ -203,11 +204,7 @@ Local Open Scope ring_scope.
     The numeric sample/limit law must need monotonicity only almost
     everywhere, not on all syntactic samples. *)
 Definition null_branch_node : SubEnumQ bool.
-Proof.
-  refine (subenumQ_of_list (mu := (1,true) :: (0,false) :: nil) _ _).
-  - intros p x [H|[H|[]]]; inversion H; subst; vm_compute; reflexivity.
-  - vm_compute. reflexivity.
-Defined.
+Proof. finite_distribution ((1,true) :: (0,false) :: nil). Defined.
 
 Definition null_branch_chain (b : bool) (n : nat) : FreeOmega SubEnumQ bool :=
   if b then FORet true else match n with O => FORet false | S _ => FOZero end.

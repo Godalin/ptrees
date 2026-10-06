@@ -238,16 +238,6 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Examples.Effects.EffectAlgebra.half_nonnegative",
-      "type": "EffectAlgebra.half_nonnegative\n     : @FiniteEnum.finite_nonnegative rat.rat_rat__canonical__Num_NumDomain unit\n         EffectAlgebra.half_entries",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.Examples.Effects.EffectAlgebra.half_bounded",
-      "type": "EffectAlgebra.half_bounded\n     : is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Order_POrder\n               rat.rat_rat__canonical__Num_NumDomain)\n            (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain unit\n               (fun _ : unit =>\n                ssralg.GRing.one\n                  (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                     rat.rat_rat__canonical__Num_NumDomain)) EffectAlgebra.half_entries)\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain)))",
-      "assumptions": "Closed under the global context"
-    },
-    {
       "name": "PTree.Examples.Effects.EffectAlgebra.half_sample",
       "type": "EffectAlgebra.half_sample\n     : Representation.SubEnumQ unit",
       "assumptions": "Closed under the global context"

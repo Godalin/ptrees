@@ -218,16 +218,6 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Examples.ITreeSampling.fair_nonnegative",
-      "type": "ITreeSampling.fair_nonnegative\n     : @FiniteEnum.finite_nonnegative rat.rat_rat__canonical__Num_NumDomain bool\n         ITreeSampling.fair_entries",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.Examples.ITreeSampling.fair_bounded",
-      "type": "ITreeSampling.fair_bounded\n     : is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Order_POrder\n               rat.rat_rat__canonical__Num_NumDomain)\n            (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain bool\n               (fun _ : bool =>\n                ssralg.GRing.one\n                  (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                     rat.rat_rat__canonical__Num_NumDomain)) ITreeSampling.fair_entries)\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain)))",
-      "assumptions": "Closed under the global context"
-    },
-    {
       "name": "PTree.Examples.ITreeSampling.fair_coin",
       "type": "ITreeSampling.fair_coin\n     : Representation.SubEnumQ bool",
       "assumptions": "Closed under the global context"

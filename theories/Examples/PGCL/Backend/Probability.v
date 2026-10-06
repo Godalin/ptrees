@@ -20,12 +20,10 @@ Record probability (W : numDomainType) := Probability {
 
 Definition bernoulli {W : numDomainType} (p : probability W) : FiniteSubdist W bool.
 Proof.
-  refine (finite_subdist_of_list
-    (mu := [(bias p,true); (1-bias p,false)]) _ _).
-  - intros q b [H|[H|[]]]; inversion H; subst.
-    + exact (bias_nonnegative p).
-    + by rewrite subr_ge0; apply bias_bounded.
-  - cbn. by rewrite !mulr1 addr0 addrC subrK.
+  finite_distribution [(bias p,true); (1-bias p,false)].
+  - exact (bias_nonnegative p).
+  - by rewrite subr_ge0; apply bias_bounded.
+  - by rewrite addrC subrK.
 Defined.
 
 Lemma bernoulli_expect {W : numDomainType} (p : probability W) (f : bool → W) :

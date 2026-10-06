@@ -88,7 +88,7 @@ Proof. apply run_exception_throw_bind. Qed.
 (** Stronger than an execution-only counterexample: unequal complete mass
     rules out peutt even though both successful outcomes throw the same error. *)
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
-From PTree.Prob.Backend.Common Require Import FiniteEnum.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation Measure.
 From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import UpperExpectation UpperQuotient.
@@ -99,11 +99,8 @@ Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Definition half_entries : list (rat * unit) := [(2^-1,tt)].
-Lemma half_nonnegative : finite_nonnegative half_entries.
-Proof. intros p x [H|[]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma half_bounded : finite_expect (λ _, 1) half_entries <= 1.
-Proof. native_compute; reflexivity. Qed.
-Definition half_sample := subenumQ_of_list half_nonnegative half_bounded.
+Definition half_sample : SubEnumQ unit.
+Proof. finite_distribution half_entries. Defined.
 Definition raises : ptree (exceptE nat +' void1) SubEnumQ unit :=
   Vis (inl1 (Throw 7%nat)) (λ v : void, match v with end).
 Definition sample_then_raise := Prob half_sample (λ _, raises).

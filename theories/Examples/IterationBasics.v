@@ -51,21 +51,11 @@ Local Notation expect := finite_subdist_expect.
 Definition return_mass (partial : bool) : rat := if partial then 1/2 else 1.
 Definition round_data partial : list (rat * (unit+bool)) :=
   [(1/2, inl tt); (return_mass partial / 2, inr true)].
-Lemma round_nonnegative partial : finite_nonnegative (round_data partial).
-Proof.
-  intros p x [H|[H|[]]]; inversion H; subst; destruct partial; by vm_compute.
-Qed.
-Lemma round_bounded partial : finite_expect (λ _, 1) (round_data partial) <= 1.
-Proof. destruct partial; by vm_compute. Qed.
-Definition kernel (partial : bool) (_ : unit) : MN (unit+bool) :=
-  subenumQ_of_list (@round_nonnegative partial) (round_bounded partial).
+Definition kernel (partial : bool) (_ : unit) : MN (unit+bool).
+Proof. finite_distribution (round_data partial); destruct partial; by vm_compute. Defined.
 Definition result_data partial : list (rat * bool) := [(return_mass partial, true)].
-Lemma result_nonnegative partial : finite_nonnegative (result_data partial).
-Proof. intros p x [H|[]]; inversion H; subst; destruct partial; by vm_compute. Qed.
-Lemma result_bounded partial : finite_expect (λ _, 1) (result_data partial) <= 1.
-Proof. destruct partial; by vm_compute. Qed.
-Definition result (partial : bool) : MN bool :=
-  subenumQ_of_list (@result_nonnegative partial) (result_bounded partial).
+Definition result (partial : bool) : MN (bool).
+Proof. finite_distribution (result_data partial); destruct partial; by vm_compute. Defined.
 
 (** Programs. The ambient signature is inhabited, but these rounds are
     silent. Tau deliberately separates program syntax from its summary. *)

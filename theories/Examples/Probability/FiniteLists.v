@@ -314,11 +314,7 @@ Example rational_subbind_is_shared {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B
 Proof. reflexivity. Qed.
 
 Definition zero_duplicate : SubEnumQ bool.
-Proof.
-  refine (subenumQ_of_list (mu := [(0,false); (1/4,true); (1/2,false); (1/4,true)]) _ _).
-  - intros p x [H|[H|[H|[H|[]]]]]; inversion H; subst; vm_compute; reflexivity.
-  - vm_compute; reflexivity.
-Defined.
+Proof. finite_distribution [(0,false); (1/4,true); (1/2,false); (1/4,true)]. Defined.
 
 Example entries_preserve_order_and_duplicates :
   subenumQ_data zero_duplicate = [(0,false); (1/4,true); (1/2,false); (1/4,true)].

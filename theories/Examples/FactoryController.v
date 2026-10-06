@@ -38,6 +38,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness Shallow ProbabilisticTrace PTreeKernel.
 From PTree.Eq.Backend Require Import EnumQ ProbabilisticTraceEnumQ.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
+From PTree.Prob.Backend.Common Require Import FiniteEnum.
 From PTree.Prob.Backend.EnumQ Require Import Representation Measure Bind.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
@@ -285,50 +286,35 @@ Module Facts.
 
 Import Controller.
 Import Scripted.
+Import FreeOmegaRewriting.
 
 Lemma embed_preserves {E A} (t u : ptree factoryE EnumQ A) :
   t ≈ₚ u → @embed E A t ≈ₚ embed u.
 Proof. apply peutt_interp. Qed.
 
-#[export] Instance embed_Proper {E A} :
-  Proper (canonical_peutt eq ==> canonical_peutt eq) (@embed E A).
-Proof. intros t u H. apply embed_preserves. exact H. Qed.
-
 Theorem implementation_sampler_correct : implementation_sampler ≈ₚ specification_sampler.
 Proof. apply embed_preserves. exact peutt_third_to_two_fifths_compositional. Qed.
 
-#[local] Instance attempt_Proper job :
-  Proper (canonical_peutt eq ==> canonical_peutt eq) (λ sampler, attempt sampler job).
+Lemma controller_step_congr s t : s ≈ₚ t →
+  pointwise_relation phase (λ x y, x ≈ₚ y) (controller_step s) (controller_step t).
 Proof.
-  intros s t H. unfold attempt. eapply peutt_bind; [exact H|].
-  intros x y ->. reflexivity.
+  intros H [|job]; cbn [controller_step]; [reflexivity|].
+  unfold attempt. setoid_rewrite H. reflexivity.
 Qed.
-
-Lemma controller_step_congr s t : s ≈ₚ t → ∀ pc,
-  controller_step s pc ≈ₚ controller_step t pc.
-Proof. intros H [|job]; cbn [controller_step]; [reflexivity|]. now apply attempt_Proper. Qed.
 
 Theorem controller_congr s t : s ≈ₚ t → ∀ pc,
   controller s pc ≈ₚ controller t pc.
 Proof.
   intros H pc. unfold controller.
-  eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
-    with (SI := eq).
-  - intros x y ->. eapply peutt_rel_mono.
-    + intros v w ->. destruct w; constructor; reflexivity.
-    + apply controller_step_congr. exact H.
-  - reflexivity.
+  setoid_rewrite (controller_step_congr H). reflexivity.
 Qed.
-
-#[export] Instance controller_Proper :
-  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq) controller.
-Proof. intros s t H pc pc' ->. now apply controller_congr. Qed.
 
 (** Main source theorem: no whole-controller coupling or coinduction. *)
 Theorem controller_refinement : controller_impl ≈ₚ controller_spec.
 Proof.
-  unfold controller_impl, controller_spec.
-  setoid_rewrite implementation_sampler_correct. reflexivity.
+  unfold controller_impl, controller_spec, controller.
+  setoid_rewrite (controller_step_congr implementation_sampler_correct).
+  reflexivity.
 Qed.
 
 Theorem state_controller_refinement s : device_controller_impl s ≈ₚ device_controller_spec s.
@@ -345,10 +331,7 @@ Theorem scripted_controller_refinement counts script :
   scripted_impl counts script ≈ₚ scripted_spec counts script.
 Proof.
   unfold scripted_impl, scripted_spec, close_controller.
-  eapply peutt_rel_mono with (RR := Exception.exception_result_rel eq).
-  - intros [x|x] [y|y] H; cbn in H; try contradiction; now subst.
-  - apply (run_exception_peutt free_omega_relational_bind).
-    apply run_state_peutt_eq. apply device_handler_refinement.
+  setoid_rewrite state_controller_refinement. reflexivity.
 Qed.
 
 (** The user-facing transformation is not restricted to the demo's 2/5.
@@ -436,6 +419,7 @@ Module Observation.
     the boolean query only projects the chosen production mode afterwards. *)
 
 Import Controller Facts.
+Import FreeOmegaRewriting.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
@@ -483,9 +467,7 @@ Definition native_sampler : tree bool := sample coin.
 Lemma embedded_direct_native : embed (factory_direct_q q0 q1) ≈ₚ native_sampler.
 Proof.
   unfold embed, factory_direct_q, native_sampler. rewrite peutt_interp_prob.
-  eapply peutt_prob with (XR := eq).
-  - apply sem_lift_refl. intros b. reflexivity.
-  - intros b c ->. apply peutt_interp_ret.
+  setoid_rewrite peutt_interp_ret. reflexivity.
 Qed.
 
 (** The simple normal form keeps the actual implementation continuation.
@@ -497,16 +479,9 @@ Lemma next_normal_form sampler job : sampler ≈ₚ native_sampler →
   after_receive sampler job ≈ₚ next_normal sampler job.
 Proof.
   intro H. unfold after_receive.
-  transitivity (PTree.bind native_sampler
-    (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))).
-  - eapply peutt_bind; [exact H|]. intros b c ->. reflexivity.
-  - change (Prob coin (λ b, PTree.bind (Ret b)
-      (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))) ≈ₚ
-      next_normal sampler job).
-    eapply peutt_prob with (XR := eq).
-    + apply sem_lift_refl. intro b. reflexivity.
-    + intros b c ->. exact (PTree.Eq.Algebra.peutt_bind_ret_l c
-        (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))).
+  setoid_rewrite H at 1.
+  unfold native_sampler, PTree.sample.
+  setoid_rewrite (peutt_sample_bind coin). reflexivity.
 Qed.
 
 Definition next_device sampler job s := run_state (next_normal sampler job) s.
@@ -581,9 +556,8 @@ Proof.
     (bind_EnumQ coin (λ b, ret_EnumQ (Bool.eqb b fast))) =
     if fast then q else 1-q).
   rewrite enumQ_expect_bind.
-  replace (λ b, enumQ_expect enumQ_bool_indicator (ret_EnumQ (Bool.eqb b fast)))
-    with (λ b, if Bool.eqb b fast then 1 else 0 : rat).
-  2: { apply functional_extensionality. intro b. rewrite enumQ_expect_ret. reflexivity. }
+  transitivity (enumQ_expect (λ b, if Bool.eqb b fast then 1 else 0) coin).
+  { apply finite_expect_ext. intro b. apply enumQ_expect_ret. }
   change (enumQ_expect (λ b, if Bool.eqb b fast then 1 else 0) coin =
     if fast then q else 1-q).
   rewrite rational_bernoulli_indicator. by destruct fast; rewrite /= ?addr0 ?add0r.

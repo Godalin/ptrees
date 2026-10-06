@@ -9,7 +9,7 @@ From Coq Require Import List Arith.PeanoNat FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
 From PTree.Prob.Domain Require Import Expectation Countable.
 From PTree.Prob.Interface Require Import Measure.
-From PTree.Prob.Backend.Common Require Import FiniteEnum.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
@@ -28,22 +28,14 @@ Definition alternating_bool : FreeOmega SubEnumQ bool :=
   FOLub (λ n, FORet (if Nat.even n then false else true)).
 
 Definition null_weight_node : SubEnumQ bool.
-Proof.
-  refine (@subenumQ_of_list bool [(1,true); (0,false)] _ _).
-  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
-  - by vm_compute.
-Defined.
+Proof. finite_distribution [(1,true); (0,false)]. Defined.
 
 Definition nullable_kernel (b : bool) : FreeOmega SubEnumQ bool :=
   if b then FORet true else alternating_bool.
 
 Definition domain_half : rat := 1/2.
 Definition domain_fair : SubEnumQ bool.
-Proof.
-  refine (@subenumQ_of_list bool [(domain_half,true); (domain_half,false)] _ _).
-  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
-  - by vm_compute.
-Defined.
+Proof. finite_distribution [(domain_half,true); (domain_half,false)]. Defined.
 Fixpoint retry_approx (n : nat) : FreeOmega SubEnumQ bool :=
   match n with
   | O => FOZero

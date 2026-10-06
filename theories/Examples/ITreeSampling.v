@@ -18,17 +18,14 @@ From PTree.Core Require Import ITreeBridge.
 From PTree.Interp.FreeOmega Require Import ITreeCompletion.
 From PTree.Interp.FreeOmega Require Import Rewriting.
 From PTree.Eq.Backend Require Import SubEnumQ.
-From PTree.Prob.Backend.Common Require Import FiniteEnum.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
 Import GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 Import FreeOmegaRewriting.
 
 Definition fair_entries : list (rat * bool) := [(2^-1,true); (2^-1,false)].
-Lemma fair_nonnegative : finite_nonnegative fair_entries.
-Proof. intros p b [H|[H|[]]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma fair_bounded : finite_expect (λ _, 1) fair_entries <= 1.
-Proof. native_compute. reflexivity. Qed.
-Definition fair_coin : SubEnumQ bool := subenumQ_of_list fair_nonnegative fair_bounded.
+Definition fair_coin : SubEnumQ bool.
+Proof. finite_distribution fair_entries. Defined.
 
 Definition two_coins : itree (probE SubEnumQ) bool :=
   ITree.bind (ITree.trigger (Sample fair_coin)) (λ x,

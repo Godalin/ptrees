@@ -5,6 +5,7 @@ From Coq Require Import Utf8.
 
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
+From PTree.Prob.Backend.Common Require Import FiniteSubdist.
 From PTree.Execution.Backend Require Import SubEnumQ RationalTickets.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
@@ -49,11 +50,8 @@ Example duplicate_value_intervals_retained :
 Proof. native_compute. reflexivity. Qed.
 
 Definition half_entries : list (rat * unit) := [(2^-1,tt)].
-Lemma half_nonnegative : finite_nonnegative half_entries.
-Proof. intros p x [H|[]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma half_bounded : finite_expect (λ _, 1) half_entries <= 1.
-Proof. native_compute. reflexivity. Qed.
-Definition half : SubEnumQ unit := subenumQ_of_list half_nonnegative half_bounded.
+Definition half : SubEnumQ unit.
+Proof. finite_distribution half_entries. Defined.
 Definition high : quantile.
 Proof. refine (@Build_quantile (3 * 4^-1) _ _); native_compute; reflexivity. Defined.
 Definition closed_half : ptree void1 SubEnumQ unit := Prob half (λ x, Ret x).
@@ -113,13 +111,8 @@ Proof. apply uniform_ticket_expectation. Qed.
 
 Definition noisy_entries : list (rat * nat) :=
   [(0,99%nat); (4^-1,7%nat); (4^-1,7%nat); (0,88%nat)].
-Lemma noisy_nonnegative : finite_nonnegative noisy_entries.
-Proof.
-  intros p x [H|[H|[H|[H|[]]]]]; inversion H; subst; native_compute; reflexivity.
-Qed.
-Lemma noisy_bounded : finite_expect (λ _, 1) noisy_entries <= 1.
-Proof. native_compute. reflexivity. Qed.
-Definition noisy_coin := subenumQ_of_list noisy_nonnegative noisy_bounded.
+Definition noisy_coin : SubEnumQ nat.
+Proof. finite_distribution noisy_entries. Defined.
 
 Example zero_duplicates_keep_mass :
   ticket_count noisy_coin = 16%nat ∧

@@ -59,9 +59,7 @@ Fail Definition missing_mass_proof : FiniteSubdist R bool :=
 
 Definition null_branch : FiniteSubdist R bool.
 Proof.
-  refine (finite_subdist_of_list (mu := [(1,true); (0,false)]) _ _).
-  - intros p b [H|[H|[]]]; inversion H; subst; [exact: ler01|exact: lexx].
-  - by rewrite /= !mulr1 !addr0.
+  finite_distribution [(1,true); (0,false)]; by rewrite ?addr0 ?ler01 ?lexx.
 Defined.
 Example null_branch_ignored :
   finite_subdist_expect null_branch (λ b, if b then 1 else -1) = 1.
