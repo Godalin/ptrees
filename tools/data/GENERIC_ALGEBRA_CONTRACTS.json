@@ -666,6 +666,26 @@
       "name": "PTree.Examples.MixedHead.UpTo.masked_protocol_equivalent_upto",
       "type": "UpTo.masked_protocol_equivalent_upto\n     : forall m : Protocol.hidden3,\n       @PEutt.peutt Protocol.mixedE Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) Protocol.impl_return\n         Protocol.spec_return Protocol.return_rel (Protocol.masked_impl m)\n         (Protocol.mixed_spec (Protocol.abstract_state m))",
       "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.Backend.Common.FiniteSubdist.finite_subdist_validP",
+      "type": "FiniteSubdist.finite_subdist_validP\n     : forall (R : ssrnum.Num.NumDomain.type) (A : Type)\n         (mu : list (ssrnum.Num.NumDomain.sort R * A)),\n       Bool.reflect\n         (@FiniteEnum.finite_nonnegative R A mu /\\\n          is_true\n            (@order.Order.le ssrnum.ring_display\n               (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Order_POrder R)\n               (@FiniteEnum.finite_expect R A\n                  (fun _ : A =>\n                   ssralg.GRing.one\n                     (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing R)) mu)\n               (ssralg.GRing.one\n                  (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                     R)))) (@FiniteSubdist.finite_subdist_valid R A mu)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Backend.Common.FiniteSubdist.finite_subdist_checked",
+      "type": "FiniteSubdist.finite_subdist_checked\n     : forall (R : ssrnum.Num.NumDomain.type) (A : Type)\n         (mu : list (ssrnum.Num.NumDomain.sort R * A)),\n       is_true (@FiniteSubdist.finite_subdist_valid R A mu) -> FiniteSubdist.FiniteSubdist R A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Backend.Common.FiniteSubdist.finite_subdist_checked_raw",
+      "type": "FiniteSubdist.finite_subdist_checked_raw\n     : forall (R : ssrnum.Num.NumDomain.type) (A : Type)\n         (mu : list (ssrnum.Num.NumDomain.sort R * A))\n         (Hvalid : is_true (@FiniteSubdist.finite_subdist_valid R A mu)),\n       @FiniteEnum.finite_enum_raw R A\n         (@FiniteSubdist.finite_subdist_enum R A\n            (@FiniteSubdist.finite_subdist_checked R A mu Hvalid)) = mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Backend.Common.FiniteSubdist.finite_subdist_checked_expect",
+      "type": "FiniteSubdist.finite_subdist_checked_expect\n     : forall (R : ssrnum.Num.NumDomain.type) (A : Type)\n         (mu : list (ssrnum.Num.NumDomain.sort R * A))\n         (Hvalid : is_true (@FiniteSubdist.finite_subdist_valid R A mu))\n         (f : A -> ssrnum.Num.NumDomain.sort R),\n       @FiniteSubdist.finite_subdist_expect R A\n         (@FiniteSubdist.finite_subdist_checked R A mu Hvalid) f =\n       @FiniteEnum.finite_expect R A f mu",
+      "assumptions": "Closed under the global context"
     }
   ],
   "direct": [

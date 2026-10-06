@@ -31,8 +31,40 @@ Definition finite_subdist_of_list {A} mu
     (Hmass : finite_expect (λ _, 1) mu <= 1) : FiniteSubdist A :=
   @Build_FiniteSubdist A (finite_enum_of_list Hnn) Hmass.
 
+(** A finite certificate, shared by rational and real backends. Checking
+    never sorts, merges, prunes or normalizes entries. Abstract scalars may
+    require a proof of the check rather than computation. *)
+Definition finite_subdist_valid {A} (mu : list (R * A)) : bool :=
+  List.forallb (λ px, 0 <= fst px) mu && (finite_expect (λ _, 1) mu <= 1).
+
+Lemma finite_subdist_validP {A} (mu : list (R * A)) :
+  reflect (finite_nonnegative mu ∧ finite_expect (λ _, 1) mu <= 1)
+    (finite_subdist_valid mu).
+Proof.
+  apply: (iffP andP).
+  - intros [Hnn Hmass]; split; last exact Hmass.
+    move/forallb_forall: Hnn => Hnn.
+    intros p x Hin. exact (Hnn (p,x) Hin).
+  - intros [Hnn Hmass]; split; last exact Hmass.
+    apply/forallb_forall. intros [p x] Hin. exact (Hnn p x Hin).
+Qed.
+
+Definition finite_subdist_checked {A} mu
+    (Hvalid : @finite_subdist_valid A mu) : FiniteSubdist A :=
+  let facts := elimT (finite_subdist_validP mu) Hvalid in
+  finite_subdist_of_list (proj1 facts) (proj2 facts).
+
+Lemma finite_subdist_checked_raw {A} mu (Hvalid : @finite_subdist_valid A mu) :
+  finite_enum_raw (finite_subdist_enum (finite_subdist_checked Hvalid)) = mu.
+Proof. reflexivity. Qed.
+
 Definition finite_subdist_expect {A} (mu : FiniteSubdist A) f :=
   finite_enum_expect (finite_subdist_enum mu) f.
+
+Lemma finite_subdist_checked_expect {A} mu
+    (Hvalid : @finite_subdist_valid A mu) (f : A → R) :
+  finite_subdist_expect (finite_subdist_checked Hvalid) f = finite_expect f mu.
+Proof. reflexivity. Qed.
 
 Definition finite_subdist_ret {A} (x : A) : FiniteSubdist A.
 Proof.
@@ -113,3 +145,20 @@ End FiniteProbability.
 
 Arguments finite_subdist_enum {R A} _.
 Arguments finite_subdist_mass_bound {R A} _.
+
+(** Opt-in construction, not a global hint. Closed rational literals compute;
+    otherwise expose only scalar inequalities, never list-membership goals.
+    Failure to establish validity cannot silently change the distribution. *)
+Ltac finite_distribution_build entries :=
+  refine (@finite_subdist_checked _ _ entries _);
+  first [solve [reflexivity] |
+    unfold finite_subdist_valid;
+    cbn [List.forallb fst finite_expect];
+    repeat match goal with
+    | |- is_true (andb _ _) => apply/andP; split
+    end;
+    rewrite ?mulr1 ?addr0;
+    try solve [reflexivity | assumption]].
+
+Tactic Notation "finite_distribution" uconstr(entries) :=
+  finite_distribution_build entries.

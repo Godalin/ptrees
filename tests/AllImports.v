@@ -430,6 +430,7 @@ Require PTree.Semantics.TreeTransition.
 Require PTree.Semantics.TreeTransitionBisim.
 Require PTree.Semantics.TreeTransitionSoundness.
 Require PTree.Tests.Capabilities.BackendCapabilities.
+Require PTree.Tests.Capabilities.FiniteDistribution.
 Require PTree.Tests.Capabilities.MonadicInterpretation.
 Require PTree.Tests.Capabilities.PTreeIterationAlgebra.
 Require PTree.Tests.Capabilities.PTreeUniformity.

@@ -30,6 +30,7 @@ From ITree.Basics Require Import Monad.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
+From PTree.Prob.Backend.Common Require Import FiniteSubdist.
 From PTree.Eq Require Import WellFormedness.
 From PTree.Prob.Backend.EnumQ Require Import
   Representation Bind Map Coupling IndexedCoupling FrontierLift SemanticCoupling Iteration.
@@ -110,44 +111,35 @@ Definition return_rel (x : impl_return) (y : spec_return) : Prop :=
 
 Definition uniform3 : SubEnumQ hidden3.
 Proof.
-  refine (subenumQ_of_list (mu := [:: (1/3, L0); (1/3, L1); (1/3, L2)]) _ _).
-  - intros p x [He|[He|[He|[]]]]; inversion He; subst; by vm_compute.
-  - by vm_compute.
+  finite_distribution [:: (1/3, L0); (1/3, L1); (1/3, L2)].
 Defined.
 
 Definition uniform2 : SubEnumQ bool.
 Proof.
-  refine (subenumQ_of_list (mu := [:: (1/2, false); (1/2, true)]) _ _).
-  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
-  - by vm_compute.
+  finite_distribution [:: (1/2, false); (1/2, true)].
 Defined.
 
 (** The implementation uses Boolean coins, not a primitive ternary draw. *)
 Definition coin_third : SubEnumQ bool.
 Proof.
-  refine (subenumQ_of_list (mu := [:: (1/3, true); (2/3, false)]) _ _).
-  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
-  - by vm_compute.
+  finite_distribution [:: (1/3, true); (2/3, false)].
 Defined.
 
 Definition coin_three_quarters : SubEnumQ bool.
 Proof.
-  refine (subenumQ_of_list (mu := [:: (3/4, true); (1/4, false)]) _ _).
-  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
-  - by vm_compute.
+  finite_distribution [:: (3/4, true); (1/4, false)].
 Defined.
 
 (** Public b = c xor s, with s biased 3/4; Stop/Continue is fair.
     Combine these independent draws into their four-outcome kernel. *)
 Definition mixed_outcomes (c : bool) : SubEnumQ mixed_outcome.
 Proof.
-  refine (subenumQ_of_list
-    (mu := let w0 := if c then 3/8 else 1/8 in
-           let w1 := if c then 1/8 else 3/8 in
-           [:: (w0, Stop false); (w1, Stop true);
-               (w0, Continue false); (w1, Continue true)]) _ _).
-  - intros p x [He|[He|[He|[He|[]]]]]; inversion He; subst; destruct c; by vm_compute.
-  - destruct c; by vm_compute.
+  finite_distribution
+    (let w0 := if c then 3/8 else 1/8 in
+     let w1 := if c then 1/8 else 3/8 in
+     [:: (w0, Stop false); (w1, Stop true);
+         (w0, Continue false); (w1, Continue true)]);
+    destruct c; by vm_compute.
 Defined.
 
 (** Program-facing kernel: both Stop and Continue sample the same payload.

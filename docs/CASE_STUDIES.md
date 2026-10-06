@@ -29,6 +29,25 @@ Paths below are relative to `theories/Examples`. Each linked file identifies
 its concrete backend at setup; program calculations consume the selected
 semantic algebra rather than repeatedly opening its finite-list representation.
 
+At the finite-backend construction boundary, import
+`Prob.Backend.Common.FiniteSubdist` and use the opt-in `finite_distribution`
+tactic. The target type selects `SubEnumQ` or `SubEnumR R`; no new semantic
+typeclass or `distₘ` notation is involved. For example:
+
+```coq
+Definition uniform3 : SubEnumQ hidden3.
+Proof. finite_distribution [:: (1/3, L0); (1/3, L1); (1/3, L2)]. Defined.
+```
+
+Closed rational weights are checked by computation. Symbolic/real weights
+leave scalar nonnegativity and mass inequalities for the caller, not
+list-membership proofs. The shared `finite_subdist_checked` constructor
+preserves the exact list and its expectations: no normalization, pruning,
+reordering or duplicate merging. Total mass may be less than one; invalid
+weights cannot produce a completed definition without a validity proof.
+This is finite representation infrastructure, not a construction operation
+assumed of every `SemanticMeasure`.
+
 | Case | Read first | Further endpoints / boundaries |
 |---|---|---|
 | [StateRewrite](../theories/Examples/StateRewrite.v) | `source_program_rewrite`, `rewrite_then_handle` | State interpretation and concrete execution hooks. Equal behavior is not same-fuel or same-entropy execution. |
