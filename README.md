@@ -261,6 +261,10 @@ in place: true uses the fresh joint support, false keeps the old invariant.
 or a symmetry assumption on the heterogeneous relation.
 Erasing both payloads gives ordinary Boolean equivalence through
 `masked_public_protocol_equivalent`.
+An independent [appendix proof](theories/Examples/MixedHeadUpTo.v) preserves
+this original proof and factors the argument into up-to-bind sampler replacement,
+then ordinary coinduction with native frontier coupling. Its endpoint is
+`masked_protocol_equivalent_upto`; it does not invoke the original final theorem.
 The bounded backend is `SubEnumQ`. `masked_challenge_true_reply_probability` proves that the
 pattern `[Challenge(c); Reply(true)]` has probability `3/8` when c=false
 and `1/8` when c=true: the environment changes the observable probability

@@ -42,6 +42,16 @@ semantic algebra rather than repeatedly opening its finite-list representation.
 | [RandomWalk](../theories/Examples/PGCL/RandomWalk.v) | `walk_source`, `walk_denote_least_fixed_point`, `walk_denote_closed_form`, `walk_forward` | pGCL source, classical semantic lfp, exact finite rounds and infinite-support output law. Passage/harmonic proofs are supporting [analysis](../theories/Examples/PGCL/RandomWalkAnalysis.v). The simulator's integer-store walk implements the same transition, without a proved representation bridge to this pair-state case. |
 | [AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v) | `Adaptive.controller_program_rewrite` | `loop_hits`, `raw_loop_fair`, `adaptive_factory_direct`, `controller_refinement`. Preserve correlated state; no new simulator/PRNG claim. |
 
+For an appendix-oriented alternative to MixedHead's in-place proof, read
+[`MixedHeadUpTo.v`](../theories/Examples/MixedHeadUpTo.v):
+`draw_impl_kernel` verifies the finite sampler, `masked_kernel_equivalent`
+uses **coinduction up to bind**, and `kernel_spec_equivalent` uses **ordinary
+coinduction with native coupling of complete Ret/Vis frontiers**. Their
+composition, `masked_protocol_equivalent_upto`, proves the same public claim
+without calling the original `masked_protocol_equivalent`. The original
+programs and direct proof are retained unchanged. Prob is not a progress
+guard; Challenge/Reply and the stable-hitting generator govern progress.
+
 Adaptive's programs and canonical behavior use `SubEnumQ -> FreeOmega SubEnumQ`.
 Its reusable [bounded factory](../theories/Examples/BernoulliFactory/BoundedFactory.v)
 connects the existing finite rational analysis to that bounded backend; raw

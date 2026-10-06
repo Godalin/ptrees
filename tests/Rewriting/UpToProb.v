@@ -29,8 +29,8 @@ Context {A B X Y Z : Type} (RR : A -> B -> Prop) (XR : X -> Y -> Prop)
 Hypothesis Hmu : sem_lift XR mu nu.
 Hypothesis Hknown : forall z x y, XR x y -> peutt (MF := MF) RR (k z x) (h z y).
 
-(** Exercise the known-equivalence summand inside sampling closure. The
-    recursive summand is exercised by MixedHeadProtocol's Reply branch. *)
+(** Exercise the known-equivalence summand inside sampling closure. This
+    is a rule-level client, not the appendix's ordinary coupling proof. *)
 Example heterogeneous_known_sampling_context :
   peutt (MF := MF) RR
     (Vis e (fun z => Prob mu (k z))) (Vis e (fun z => Prob nu (h z))).
