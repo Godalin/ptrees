@@ -273,6 +273,12 @@ would need sample preservation.
 
 ## Reading and checking
 
+The UIP-free generic interpretation laws below should not be confused with
+every interpretation-related endpoint. The separate FreeOmega
+`peutt_translate` proof and the ITree reflection/iff currently retain UIP
+through dependent inversion. ITree preservation `from_itree_eutt` uses
+excluded middle but no UIP. See the [logical assumption boundaries](AUDITING.md#logical-assumptions-and-their-roles).
+
 Use `PTree PTreeFacts` plus an explicit backend for behavioral clients;
 StateT operations and agreement are already exported by `PTreeFacts`;
 other transformer owners and rewriting registrations are opt-in.

@@ -131,6 +131,9 @@ Qed.
 (** AE restriction is essential: the contribution functions need only be
     correct almost everywhere, not at null heads. Integrating a coupling
     restricted to BOTH such predicates preserves the original masses. *)
+(** This comparison inherits UIP through [peutt_head_action_results] and
+    [head_step_vis_iff]. Its [peutt_trans_bisim] corollary inherits it too;
+    core [peutt] equivalence and bind do not use this comparison path. *)
 Theorem peutt_preserves_trans (t u : tree) label out1 out2 :
   W t u → trans t label out1 → trans u label out2 →
   sem_lift (trans_head_rel W) out1 out2.

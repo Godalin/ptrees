@@ -114,6 +114,79 @@ Optional `--build --gate S` builds only safe targets before checking;
 `--build --gate M` builds the isolated unchecked targets. This does not change
 the meaning of Gate M or replace the source/dependency checks above.
 
+## Logical assumptions and their roles
+
+The source comments mark strong inversion boundaries; this section summarizes
+their meaning for the artifact and paper. The authority for a particular
+endpoint is its compiled type and `Print Assumptions` contract, not the
+presence of an import or tactic. In particular, `dependent destruction` does
+not invariably introduce UIP. A result closed under the global context can
+still quantify explicit probability-law premises; its concrete instances can
+inherit the assumptions used to prove those laws.
+
+| Assumption family | Role in the current development | Boundary |
+| --- | --- | --- |
+| UIP (`Eqdep.Eq_rect_eq.eq_rect_eq`) | Strong inversion aligns components of dependent event/response or sampling-carrier packages. | `pstrong_vis_inv`, `pstrong_prob_inv`, `head_step_vis_iff`, `head_bisim_vis_iff`, and clients using such inversions; see the qualifications below. |
+| Functional extensionality (including `boolp`'s version) | Converts pointwise agreement to equality of function-valued semantic objects or continuations in some proofs. | Distinct from pointwise relational congruence, which need not equate functions; not a sampling-correctness assumption. |
+| Excluded middle | Makes classical case distinctions, e.g. whether a label is enabled or a finite observable head exists. | Used in some generic existence/reflection proofs as well as concrete mathematics; not exclusively a backend assumption. |
+| Classical/dependent choice and definite/indefinite description | Selects families of semantic witnesses from pointwise existence, or packages a chosen representative. | For example `trans_exists`, `finite_interaction_query_exists` and selected complete frontiers; different from dependent-index inversion. |
+| Concrete classical probability infrastructure | Extensionality, propositional extensionality, choice and classical real-number infrastructure inherited from concrete constructions. | Check the instantiated endpoint: MathComp/real analysis and OmegaVal validation can contribute these dependencies, and rational relational constructions can use classical choice too. |
+
+`stable_head_rel_view_intro` and `head_step_vis_label` preserve a dependent
+package or an existential response and are closed under the global context.
+In contrast, `head_step_vis_iff` asks for the continuation at a *specified*
+response. Its current proof uses UIP; `trans_unique`, `peutt_preserves_trans`,
+`peutt_trans_bisim` and MDP transition correspondence inherit that dependency.
+The encoding-specific `mdp_choose_head_rel_iff` avoids it because `Choose`
+has a fixed action carrier. Consequently the rational source-MDP/`peutt`
+correspondence can be UIP-free while its `trans_bisim` counterpart is not.
+
+Do **not** summarize the whole remaining UIP footprint as "only transition
+comparison." Recorded dependencies also include ITree reflection
+(`from_itree_eutt_reflect` and its iff), FreeOmega translation
+(`peutt_translate`), `peutt_preserves_finite_interaction_query`, the
+`probabilistic_ptree_bind`/`probabilistic_ptree_iter` validity proofs, and
+downstream examples. These proofs still use dependent inversions; this
+documentation does not assert that each is unavoidable or that each routes
+through the four named strong inversion lemmas.
+
+Conversely, the core `peutt` equivalence, generic bind/up-to rules, main
+structural composition and iteration laws, and the maintained Factory and
+pGCL/RandomWalk paths do not depend on UIP. This says neither that every
+theorem in their directories is UIP-free nor that these paths use no other
+axioms. For example `peutt_bind` and `peutt_iter_eventful_rel` are closed under
+their explicit profiles, whereas `walk_run` retains functional extensionality,
+relational choice and dependent unique choice. Source ITree preservation
+`from_itree_eutt` uses excluded middle; reflection additionally uses UIP.
+
+External OmegaVal validation stays outside ordinary behavioral reasoning.
+Its classical mathematical assumptions are not implicit premises of generic
+PTree theorems. Similarly, `MathCompCouplingGluing` is an explicit probability
+premise, not a logical axiom hidden in an instance. Gate M's universe-checking
+relaxation is a separate trust boundary, not another item in a logical-axiom
+whitelist and not made safe by an empty logical-assumptions block.
+
+### Relation to ITree and CTree
+
+ITree documents UIP for its strong `eqit_inv_Vis` and contrasts it with an
+axiom-free weak inversion retaining heterogeneous equality; its README also
+separates extensionality from classical/choice assumptions.
+See the [ITree Axioms section](https://github.com/DeepSpec/InteractionTrees/blob/master/README.md#axioms)
+and [Eqit inversion lemmas](https://github.com/DeepSpec/InteractionTrees/blob/master/theories/Eq/Eqit.v).
+CTree explicitly identifies `JMeq_eq`-based dependent `Vis`/`Br` inversion in
+[CTreeDefinitions.v](https://github.com/vellvm/ctrees/blob/dev/theories/Core/CTreeDefinitions.v#L418)
+and [Equ.v](https://github.com/vellvm/ctrees/blob/dev/theories/Eq/Equ.v#L289).
+The analogy is the distinction between packaged and fixed-index inversion,
+not an assertion that the three libraries have identical assumption sets.
+
+For paper-facing descriptions, say "currently relies on" or "in our
+development." Give one short explanation at the inversion boundary and
+brief reminders at dependent comparison results; keep the detailed inventory
+in the artifact. Do not claim necessity, impossibility of elimination, or
+whole-library constructivity. No necessity theorem for these inversions has
+been established here. The comparison above concerns the cited source/API
+documentation, not a claim about what is absent from the ITree/CTree papers.
+
 ## Trust and kernel checks
 
 A full build includes the two Gate M files and is not a universe-checked

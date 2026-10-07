@@ -6,6 +6,9 @@ inherit classical/extensional axioms even when a generic proof is closed under
 its explicit context. [Compiled contracts](../tools/data/CONTRACT_SUITES.json)
 record actual types and logical dependencies; the profiles below are sufficient
 requirements, not mathematical-minimality claims.
+The [assumption guide](AUDITING.md#logical-assumptions-and-their-roles) separates
+dependent inversion, extensionality, witness choice and concrete backend
+mathematics; being UIP-free is not the same as being assumption-free.
 
 ## Relations and stable observations
 
@@ -205,6 +208,13 @@ The rational upper evaluator's AE monotonicity/extensionality also reuse
 the existing FreeOmega AE view; their remaining classical mathematics is
 unchanged. These are per-endpoint dependency claims, not constructivity
 claims about all probability backends.
+
+Other audited paths still use UIP: ITree reflection, the separate FreeOmega
+translation proof, finite-interaction query preservation and syntactic
+probabilistic-tree validity under bind/iter. These are not the core `peutt`
+equivalence/bind/iteration proofs. See the assumption guide for precise
+examples; do not extend the core UIP-free claim to every interpreter,
+observation, validity theorem or case study.
 
 Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
 The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper

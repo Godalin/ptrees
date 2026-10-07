@@ -258,6 +258,9 @@ Inductive translate_bisim_state :
         (observe (PTree.translate rename t1))
         (observe (PTree.translate rename t2)).
 
+(** The current head/translation composition uses UIP through dependent
+    inversion. [peutt_translate] and its downstream clients inherit it;
+    this is distinct from the UIP-free generic handler interpretation laws. *)
 Lemma translate_head_comp
     (hT1 : stable_head F MN R1) (hT2 : stable_head F MN R2) :
   (∃ hS2,

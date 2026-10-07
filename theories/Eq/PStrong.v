@@ -219,6 +219,12 @@ Lemma pstrong_vis_intro {R X} (e : E X)
   pstrong eq (Vis e k1) (Vis e k2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
+(** Logical boundary: this strong inversion recovers continuations at a
+    specified hidden response type. Its current proof uses UIP
+    [Eqdep.Eq_rect_eq.eq_rect_eq], unlike packaged constructor elimination.
+    The core composition/bind laws do not inherit this dependency.
+    This is a proof-dependency statement, not a necessity theorem;
+    see [docs/AUDITING.md] for the ITree/CTree comparison and full scope. *)
 Lemma pstrong_vis_inv {R X} (e : E X)
     (k1 k2 : X → ptree E M R) :
   pstrong eq (Vis e k1) (Vis e k2) →
@@ -237,6 +243,8 @@ Lemma pstrong_prob_intro {R} {X Y : Type}
   pstrong eq (Prob mu k1) (Prob nu k2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
+(** Likewise, inversion at specified sampling carriers currently uses UIP;
+    this is not an additional assumption about the probability law. *)
 Lemma pstrong_prob_inv {R} {X Y : Type}
     (mu : M X) (nu : M Y)
     (k1 : X → ptree E M R) (k2 : Y → ptree E M R) :

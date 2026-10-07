@@ -336,6 +336,9 @@ Qed.
 (** Canonical behavioral equivalence preserves all finite dependent event
     prefixes.  Stable-head coupling transports the almost-everywhere domain
     on which recursive continuation queries are required. *)
+(** This quantitative observation theorem currently retains UIP through
+    dependent head inversion. It is separate from the UIP-free core
+    behavioral algebra and from choice used to select query witnesses. *)
 Theorem peutt_preserves_finite_interaction_query {R1 R2}
     (RR : R1 → R2 → Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 :

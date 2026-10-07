@@ -16,7 +16,7 @@ signatures and proof details. Historical proposals and acceptance logs live in G
 | [Execution](EXECUTION.md) | Fold, closed runner, rational sampling, finite correctness and fuel-free simulation |
 | [Case studies](CASE_STUDIES.md) | Reading entries, notation and the role of each program proof |
 | [Case-study standard](CASE_STUDY_STANDARD.md) | Presentation and proof-organization policy |
-| [Verification](AUDITING.md) | Local commands, contract data and checked/unchecked trust contexts |
+| [Verification](AUDITING.md) | Logical-assumption boundaries, local commands, contract data and checked/unchecked trust contexts |
 
 Machine-readable contracts and the generated dependency inventory belong in
 [`tools/data/`](../tools/data/), not alongside narrative guides. They are not

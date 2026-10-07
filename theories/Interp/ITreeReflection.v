@@ -22,7 +22,11 @@ Context {E MN : Type → Type} {A B : Type}.
 Variable RR : A → B → Prop.
 
 (** Finite Tau prefixes are discharged inductively, not used as a
-    coinductive guard. Only the matched visible continuations use [sim]. *)
+    coinductive guard. Only the matched visible continuations use [sim].
+    The current dependent head inversion uses UIP; reflection and its iff
+    inherit it. This is separate from the excluded middle used below to
+    distinguish finite-head existence from silent divergence, and from
+    [from_itree_eutt] preservation, which does not depend on UIP. *)
 Lemma itree_head_at_eqitF
     (rel : ptree E MN A → ptree E MN B → Prop)
     (sim : itree E A → itree E B → Prop)

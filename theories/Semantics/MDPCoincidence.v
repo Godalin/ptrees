@@ -157,6 +157,9 @@ Proof.
   - apply sem_eq_refl.
 Qed.
 
+(** The visible case currently uses UIP to align offered-event packages;
+    [mdp_head_vis_iff] also inherits fixed-response inversion. The fragment
+    correspondence below therefore retains UIP; see [docs/AUDITING.md]. *)
 Local Lemma fragment_head_pair_progress h k : fragment_head_pair h k →
   ptree_stable_head_rel eq fragment_distribution_pair h k.
 Proof.

@@ -501,6 +501,22 @@ SubEnumQ and SubEnumR. This does not construct an inverse for every Prob-free
 PTree or assert reflection for arbitrary handlers or sampling elaboration.
 See [the precise conservativity result](docs/INTERPRETERS.md#itree-embedding-and-sampling-elaboration).
 
+## Logical assumptions
+
+The compiled contracts distinguish explicit semantic-law premises from logical
+axioms inherited by a proof. Core `peutt` equivalence, generic bind/up-to and
+the main structural/iteration laws do not depend on UIP; this is not a
+whole-library or concrete-backend axiom-freedom claim. Some strong dependent
+inversions currently use `eq_rect_eq`, as do their comparison clients and
+several remaining auxiliary proofs. Functional extensionality, classical
+reasoning and witness selection are recorded separately from backend
+mathematics and the isolated MathComp universe relaxation.
+
+See [logical assumptions and their roles](docs/AUDITING.md#logical-assumptions-and-their-roles)
+for the precise boundaries, examples, and ITree/CTree source references.
+These describe current proof dependencies, not claims that the assumptions
+are logically necessary.
+
 ## Meta
 
 - Author(s):

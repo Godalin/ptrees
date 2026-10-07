@@ -38,6 +38,11 @@ Inductive head_step {R} :
       ptree_stable_hitting (MF := MF) (observe (k x)) out →
       head_step (FHVis e k) (Obs e x) out.
 
+(** Logical boundary: the forward direction recovers [k x] at the specified
+    response [x] from dependent head/label packages. Its current proof uses
+    UIP [Eqdep.Eq_rect_eq.eq_rect_eq]; no necessity result is claimed.
+    [head_step_vis_label] below instead keeps the response existential and
+    is closed under the global context. See [docs/AUDITING.md]. *)
 Lemma head_step_vis_iff {R X} (e : E X) (k : X → ptree E MN R) x out :
   head_step (FHVis e k) (Obs e x) out ↔
   ptree_stable_hitting (MF := MF) (observe (k x)) out.
@@ -69,6 +74,7 @@ Proof.
   exact (Hview (FHVis e k) label out).
 Qed.
 
+(** Inherits UIP from fixed-response inversion [head_step_vis_iff]. *)
 Lemma head_step_unique `{FOL : @SemanticOmegaLaws MF FI FO}
     {R} (h : stable_head E MN R) label out1 out2 :
   head_step h label out1 → head_step h label out2 → sem_eq out1 out2.
@@ -169,6 +175,8 @@ Proof.
   - apply head_bisim_fold. constructor. exact H.
 Qed.
 
+(** The forward direction likewise uses UIP for fixed-event inversion.
+    This does not affect the packaged [head_bisim_step_match] rule below. *)
 Lemma head_bisim_vis_iff {X} (e : E X)
     (k1 : X → ptree E MN R1) (k2 : X → ptree E MN R2) :
   head_bisim (FHVis e k1) (FHVis e k2) ↔

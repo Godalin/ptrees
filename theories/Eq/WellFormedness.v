@@ -115,7 +115,10 @@ Proof. reflexivity. Qed.
 
 (** Syntactic bind retains every existing node measure and only transforms
     its continuation.  Consequently this closure theorem needs no
-    [SemanticSubprobabilityLaws] assumption about measure-level bind. *)
+    [SemanticSubprobabilityLaws] assumption about measure-level bind.
+    The current validity proof (and iter closure below) nevertheless uses
+    UIP via dependent inversion of node validity. This is not the core
+    behavioral bind/iter congruence proof; see [docs/AUDITING.md]. *)
 CoFixpoint probabilistic_ptree_bind {T U}
     (t : ptree E M T) (k : T → ptree E M U)
     (Ht : probabilistic_ptree t)
