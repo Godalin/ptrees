@@ -291,13 +291,13 @@ preservation and handler-composition laws are now closed under the global
 context, with their semantic profile explicit in the signatures. This follows
 from removing UIP-based head inversions in the generic behavioral proofs;
 the contract update preserves the compiled types and only reduces assumptions.
-The separate `interp_ptree_trigger` proof still depends on `Eq_rect_eq`.
-After the FreeOmega support/quotient cleanup, the `HandlerCompletion`
-specializations retain dependent functional extensionality but no UIP,
-except `free_omega_interp_trigger`, which inherits the separate trigger
-proof's `Eq_rect_eq` dependency. These assumptions remain recorded in the
-compiled contracts; the user-facing rewrite chain does not introduce an
-extensionality proof.
+The `PStruct` transitivity/bind cleanup also removes UIP from the separate
+`interp_ptree_trigger` proof. After these structural and FreeOmega
+support/quotient cleanups, the corresponding `HandlerCompletion`
+specializations, including `free_omega_interp_trigger`, retain dependent
+functional extensionality but no UIP. These assumptions remain recorded in
+the compiled contracts; the user-facing rewrite chain does not introduce
+an extensionality proof.
 
 ## Remaining boundaries
 

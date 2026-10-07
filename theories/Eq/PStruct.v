@@ -42,6 +42,22 @@ Variant pstructF
       (∀ x, sim (k1 x) (k2 x)) →
       pstructF sim (ProbF mu k1) (ProbF mu k2).
 
+(** One-sided view: retain an event/sample carrier with its continuation,
+    rather than identifying proofs of equality between hidden carriers. *)
+Lemma pstructF_inv sim t1 t2 :
+  pstructF sim t1 t2 →
+  match t1 with
+  | RetF r => ∃ s, t2 = RetF s ∧ RR r s
+  | TauF t => ∃ u, t2 = TauF u ∧ sim t u
+  | @VisF _ _ _ _ X e k =>
+      ∃ l : X → ptree E M R2, t2 = VisF e l ∧ ∀ x, sim (k x) (l x)
+  | @ProbF _ _ _ _ X mu k =>
+      ∃ l : X → ptree E M R2, t2 = ProbF mu l ∧ ∀ x, sim (k x) (l x)
+  end.
+Proof.
+  intro H. destruct H; cbn; eexists; split; try reflexivity; assumption.
+Qed.
+
 Definition pstruct_body
     (sim : ptree E M R1 → ptree E M R2 → Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) : Prop :=
@@ -174,17 +190,13 @@ Proof.
   set ov := observe v in Hstep1 Hstep2.
   set ow := observe w in Hstep2 |- *.
   change (pstructF eq (` CH) ou ow).
-  destruct ov.
-  - dependent destruction Hstep1. dependent destruction Hstep2.
-    rewrite -x0 -x. constructor. reflexivity.
-  - dependent destruction Hstep1. dependent destruction Hstep2.
-    rewrite -x0 -x. constructor. apply CIH. exact: PStTC H H0.
-  - dependent destruction Hstep1. dependent destruction Hstep2.
-    rewrite -x0 -x. constructor=> y. apply CIH.
-    exact: PStTC (H y) (H0 y).
-  - dependent destruction Hstep1. dependent destruction Hstep2.
-    rewrite -x0 -x. constructor=> y. apply CIH.
-    exact: PStTC (H y) (H0 y).
+  clearbody ou ov ow.
+  destruct Hstep1; apply pstructF_inv in Hstep2;
+    destruct Hstep2 as [other [-> Hother]].
+  - constructor. congruence.
+  - constructor. apply CIH. exact: PStTC H Hother.
+  - constructor=> y. apply CIH. exact: PStTC (H y) (Hother y).
+  - constructor=> y. apply CIH. exact: PStTC (H y) (Hother y).
 Qed.
 
 #[global] Instance pstruct_equivalence {R : Type} :
@@ -227,16 +239,17 @@ Proof.
         (observe (PTree.bind s1 k1)) (observe (PTree.bind s2 k2))).
       rewrite !observe_bind.
       pose proof (pstruct_unfold Hs) as Hstep.
-      dependent destruction Hstep; cbn.
-      + rewrite <- x0, <- x.
-        pose proof (pstruct_unfold (Hcont H)) as Hret.
+      remember (observe s1) as o1 in Hstep |- *.
+      remember (observe s2) as o2 in Hstep |- *.
+      destruct Hstep; cbn.
+      + pose proof (pstruct_unfold (Hcont H)) as Hret.
         eapply pstructF_monotone; [|exact Hret].
         intros v1 v2 Hv. apply CIH. right. exact Hv.
-      + rewrite <- x0, <- x. constructor. apply CIH. left.
+      + constructor. apply CIH. left.
         eexists _, _. repeat split; eauto.
-      + rewrite <- x0, <- x. constructor=> y. apply CIH. left.
+      + constructor=> y. apply CIH. left.
         eexists _, _. repeat split; eauto.
-      + rewrite <- x0, <- x. constructor=> y. apply CIH. left.
+      + constructor=> y. apply CIH. left.
         eexists _, _. repeat split; eauto.
     - unfold pstruct_body.
       pose proof (pstruct_unfold Hdone) as Hstep.
@@ -371,15 +384,17 @@ Proof.
       rewrite (observing_observe (unfold_aloop_ g j)).
       rewrite !observe_bind.
       pose proof (pstruct_unfold (Hstep j)) as Hs.
-      dependent destruction Hs; cbn.
-      + rewrite <- x0, <- x. destruct r2 as [j'|r].
+      remember (observe (f j)) as o1 in Hs |- *.
+      remember (observe (g j)) as o2 in Hs |- *.
+      destruct Hs; cbn.
+      + subst r1. destruct r2 as [j'|r].
         * constructor. apply CIH. constructor.
         * constructor. reflexivity.
-      + rewrite <- x0, <- x. constructor. apply CIH.
+      + constructor. apply CIH.
         constructor. exact H.
-      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
-      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
     - unfold pstruct_body.
       change (pstructF eq (` CH)
@@ -387,15 +402,17 @@ Proof.
         (observe (PTree.bind t2 pstruct_iter_handler_g))).
       rewrite !observe_bind.
       pose proof (pstruct_unfold H12) as Hs.
-      dependent destruction Hs; cbn.
-      + rewrite <- x0, <- x. destruct r2 as [j'|r].
+      remember (observe t1) as o1 in Hs |- *.
+      remember (observe t2) as o2 in Hs |- *.
+      destruct Hs; cbn.
+      + subst r1. destruct r2 as [j'|r].
         * constructor. apply CIH. constructor.
         * constructor. reflexivity.
-      + rewrite <- x0, <- x. constructor. apply CIH.
+      + constructor. apply CIH.
         constructor. exact H.
-      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
-      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
     - unfold pstruct_body.
       pose proof (pstruct_unfold H12) as Hs.
@@ -468,16 +485,17 @@ Proof.
       rewrite (observing_observe (unfold_aloop_ g j2)).
       rewrite !observe_bind.
       pose proof (pstruct_unfold (Hstep Hj)) as Hs.
-      dependent destruction Hs; cbn.
-      + rewrite <- x0. rewrite <- x.
-        dependent destruction H. cbn.
+      remember (observe (f j1)) as o1 in Hs |- *.
+      remember (observe (g j2)) as o2 in Hs |- *.
+      destruct Hs; cbn.
+      + destruct H; cbn.
         * constructor. apply CIH. constructor. exact H.
         * constructor. exact H.
-      + rewrite <- x0. rewrite <- x. constructor. apply CIH.
+      + constructor. apply CIH.
         constructor. exact H.
-      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
-      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
     - unfold pstruct_body.
       change (pstructF RR (` CH)
@@ -485,16 +503,17 @@ Proof.
         (observe (PTree.bind t2 pstruct_iter_rel_handler_g))).
       rewrite !observe_bind.
       pose proof (pstruct_unfold H12) as Hs.
-      dependent destruction Hs; cbn.
-      + rewrite <- x0. rewrite <- x.
-        dependent destruction H. cbn.
+      remember (observe t1) as o1 in Hs |- *.
+      remember (observe t2) as o2 in Hs |- *.
+      destruct Hs; cbn.
+      + destruct H; cbn.
         * constructor. apply CIH. constructor. exact H.
         * constructor. exact H.
-      + rewrite <- x0. rewrite <- x. constructor. apply CIH.
+      + constructor. apply CIH.
         constructor. exact H.
-      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
-      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+      + constructor=> y. apply CIH.
         constructor. exact (H y).
     - unfold pstruct_body.
       pose proof (pstruct_unfold H12) as Hs.

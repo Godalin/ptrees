@@ -3,7 +3,6 @@ From Coq Require Import Utf8.
 
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice.
-From Coq.Program Require Import Equality.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed PTree.Prob.Interface.SemanticCoupling.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 
@@ -507,7 +506,9 @@ Theorem free_omega_reference_marginals_ret_deterministic {A B J}
   free_omega_lift (λ p y, project_right p = y) right (FORet b) →
   ∃ a, free_omega_ae (λ x, x = a) mu.
 Proof.
-  intros Heq Hl Hr. dependent destruction Hr.
+  intros Heq Hl Hr.
+  pose proof (free_omega_lift_inv (free_omega_lift_sym Hr)) as Hret.
+  destruct Hret as [x [-> Hx]].
   exists (project_left x).
   assert (Hright : free_omega_ae (λ p : J, project_left p = project_left x) (FORet x)).
   { apply FOAERet. reflexivity. }

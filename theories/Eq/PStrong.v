@@ -50,6 +50,27 @@ Variant pstrongF
       sem_lift (λ x y, sim (k1 x) (k2 y)) mu nu →
       pstrongF sim (ProbF mu k1) (ProbF nu k2).
 
+(** Keep the sampled carrier and continuation packaged on the other side.
+    This supports composition without a fixed-carrier dependent inversion. *)
+Lemma pstrongF_inv sim t1 t2 :
+  pstrongF sim t1 t2 →
+  match t1 with
+  | RetF r => ∃ s, t2 = RetF s ∧ RR r s
+  | TauF t => ∃ u, t2 = TauF u ∧ sim t u
+  | @VisF _ _ _ _ X e k =>
+      ∃ l : X → ptree E M R2, t2 = VisF e l ∧ ∀ x, sim (k x) (l x)
+  | @ProbF _ _ _ _ X mu k =>
+      ∃ Y (nu : M Y) (l : Y → ptree E M R2),
+        t2 = ProbF nu l ∧ sem_lift (λ x y, sim (k x) (l y)) mu nu
+  end.
+Proof.
+  intro H. destruct H; cbn.
+  - eexists. split; [reflexivity|assumption].
+  - eexists. split; [reflexivity|assumption].
+  - eexists. split; [reflexivity|assumption].
+  - exists Y, nu, k2. split; [reflexivity|assumption].
+Qed.
+
 Definition pstrong_body
     (sim : ptree E M R1 → ptree E M R2 → Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) : Prop :=
@@ -253,24 +274,16 @@ Proof.
   set ov := observe v in Hstep1 Hstep2.
   set ow := observe w in Hstep2 |- *.
   change (pstrongF eq (` CH) ou ow).
-  destruct ov.
-  - dependent destruction Hstep1.
-    dependent destruction Hstep2.
-    rewrite -x0 -x.
-    constructor. reflexivity.
-  - dependent destruction Hstep1.
-    dependent destruction Hstep2.
-    rewrite -x0 -x.
-    constructor. apply CIH. exact: (PSTC H H0).
-  - dependent destruction Hstep1.
-    dependent destruction Hstep2.
-    rewrite -x0 -x.
-    constructor=> y. apply CIH. exact: (PSTC (H y) (H0 y)).
-  - dependent destruction Hstep1.
-    dependent destruction Hstep2.
-    rewrite -x0 -x.
+  clearbody ou ov ow.
+  destruct Hstep1; apply pstrongF_inv in Hstep2.
+  - destruct Hstep2 as [other [-> Hother]]. constructor. congruence.
+  - destruct Hstep2 as [other [-> Hother]].
+    constructor. apply CIH. exact: (PSTC H Hother).
+  - destruct Hstep2 as [other [-> Hother]].
+    constructor=> y. apply CIH. exact: (PSTC (H y) (Hother y)).
+  - destruct Hstep2 as [Z [xi [other [-> Hother]]]].
     constructor.
-    have Hcomp := @sem_lift_comp M MI MC _ _ _ _ _ _ _ _ H H0.
+    have Hcomp := @sem_lift_comp M MI MC _ _ _ _ _ _ _ _ H Hother.
     eapply sem_lift_mono; [|exact Hcomp].
     + move=> a c Hac.
       apply CIH.
@@ -369,16 +382,17 @@ Proof.
         (observe (PTree.bind s1 k1)) (observe (PTree.bind s2 k2))).
       rewrite !observe_bind.
       pose proof (pstrong_unfold Hs) as Hstep.
-      dependent destruction Hstep; cbn.
-      + rewrite <- x0, <- x.
-        pose proof (pstrong_unfold (Hcont H)) as Hret.
+      remember (observe s1) as o1 in Hstep |- *.
+      remember (observe s2) as o2 in Hstep |- *.
+      destruct Hstep; cbn.
+      + pose proof (pstrong_unfold (Hcont H)) as Hret.
         eapply pstrongF_monotone; [|exact Hret].
         intros v1 v2 Hv. apply CIH. right. exact Hv.
-      + rewrite <- x0, <- x. constructor. apply CIH. left.
+      + constructor. apply CIH. left.
         eexists _, _. repeat split; eauto.
-      + rewrite <- x0, <- x. constructor=> y. apply CIH. left.
+      + constructor=> y. apply CIH. left.
         eexists _, _. repeat split; eauto.
-      + rewrite <- x0, <- x. constructor.
+      + constructor.
         eapply sem_lift_mono; [|exact H].
         intros a1 a2 Ha. apply CIH. left.
         eexists _, _. repeat split; eauto.

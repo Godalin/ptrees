@@ -110,7 +110,7 @@
     {
       "name": "PTree.Interp.HandlerFacts.peutt_interp_trigger_event",
       "type": "@HandlerFacts.peutt_interp_trigger_event\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (X : Type) (h : Core.Handler.Handler MN E F) (e : E X),\n       @PEutt.peutt F MN MF FI FC MX FO X X (@eq X)\n         (@PTreeDefinition.PTree.interp_tree E F MN h X (@PTreeDefinition.PTree.trigger E MN X e))\n         (h X e)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.HandlerFacts.handler_cat_congr",
@@ -120,7 +120,7 @@
     {
       "name": "PTree.Interp.HandlerFacts.handler_cat_id_l",
       "type": "@HandlerFacts.handler_cat_id_l\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (h : Core.Handler.Handler MN E F),\n       @HandlerRelation.peutt_handler E F MN MF FI FC MX FO\n         (@Handler.cat MN E E F (@Handler.id_ MN E) h) h",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.HandlerFacts.handler_cat_id_r",
@@ -140,12 +140,12 @@
     {
       "name": "PTree.Interp.HandlerFacts.handler_case_inl",
       "type": "@HandlerFacts.handler_case_inl\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F G : Type -> Type) (h : Core.Handler.Handler MN E G)\n         (g : Core.Handler.Handler MN F G),\n       @HandlerRelation.peutt_handler E G MN MF FI FC MX FO\n         (@Handler.cat MN E (Sum.sum1 E F) G (@Handler.inl_ MN E F) (@Handler.case_ MN E F G h g))\n         h",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.HandlerFacts.handler_case_inr",
       "type": "@HandlerFacts.handler_case_inr\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F G : Type -> Type) (h : Core.Handler.Handler MN E G)\n         (g : Core.Handler.Handler MN F G),\n       @HandlerRelation.peutt_handler F G MN MF FI FC MX FO\n         (@Handler.cat MN F (Sum.sum1 E F) G (@Handler.inr_ MN E F) (@Handler.case_ MN E F G h g))\n         g",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.HandlerFacts.handler_case_eta",
@@ -155,7 +155,7 @@
     {
       "name": "PTree.Interp.HandlerFacts.handler_case_eta_cat",
       "type": "@HandlerFacts.handler_case_eta_cat\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F G : Type -> Type) (h : Core.Handler.Handler MN (Sum.sum1 E F) G),\n       @HandlerRelation.peutt_handler (Sum.sum1 E F) G MN MF FI FC MX FO\n         (@Handler.case_ MN E F G (@Handler.cat MN E (Sum.sum1 E F) G (@Handler.inl_ MN E F) h)\n            (@Handler.cat MN F (Sum.sum1 E F) G (@Handler.inr_ MN E F) h)) h",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.HandlerFacts.handler_case_cat",
@@ -200,7 +200,7 @@
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_cat_id_l",
       "type": "@HandlerCompletion.free_omega_handler_cat_id_l\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type)\n         (h : Core.Handler.Handler MN E F),\n       @HandlerRelation.peutt_handler E F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO)\n         (@Handler.cat MN E E F (@Handler.id_ MN E) h) h",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_cat_id_r",
@@ -215,12 +215,12 @@
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_case_inl",
       "type": "@HandlerCompletion.free_omega_handler_case_inl\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F G : Type -> Type)\n         (h : Core.Handler.Handler MN E G) (g : Core.Handler.Handler MN F G),\n       @HandlerRelation.peutt_handler E G MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO)\n         (@Handler.cat MN E (Sum.sum1 E F) G (@Handler.inl_ MN E F) (@Handler.case_ MN E F G h g))\n         h",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_case_inr",
       "type": "@HandlerCompletion.free_omega_handler_case_inr\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F G : Type -> Type)\n         (h : Core.Handler.Handler MN E G) (g : Core.Handler.Handler MN F G),\n       @HandlerRelation.peutt_handler F G MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO)\n         (@Handler.cat MN F (Sum.sum1 E F) G (@Handler.inr_ MN E F) (@Handler.case_ MN E F G h g))\n         g",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_bimap_congr",
@@ -255,7 +255,7 @@
     {
       "name": "PTree.Tests.Imports.PublicHandlers.public_left_unit",
       "type": "@PublicHandlers.public_left_unit\n     : forall (E F : Type -> Type) (h : Core.Handler.Handler Representation.SubEnumQ E F)\n         (X : Type) (e : E X),\n       @Canonical.canonical_peutt F Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) X X (@eq X)\n         (@Handler.cat Representation.SubEnumQ E E F (@Handler.id_ Representation.SubEnumQ E) h X e)\n         (h X e)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Imports.PublicHandlers.public_right_unit",
@@ -270,7 +270,7 @@
     {
       "name": "PTree.Tests.Imports.PublicHandlers.public_case_beta",
       "type": "PublicHandlers.public_case_beta\n     : @Canonical.canonical_peutt PublicHandlers.answerE Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) bool bool (@eq bool)\n         (@Handler.cat Representation.SubEnumQ PublicHandlers.requestE\n            (Sum.sum1 PublicHandlers.requestE PublicHandlers.requestE) PublicHandlers.answerE\n            (@Handler.inl_ Representation.SubEnumQ PublicHandlers.requestE PublicHandlers.requestE)\n            (@Handler.case_ Representation.SubEnumQ PublicHandlers.requestE PublicHandlers.requestE\n               PublicHandlers.answerE PublicHandlers.immediate PublicHandlers.immediate) bool\n            PublicHandlers.Request) (@PublicHandlers.immediate bool PublicHandlers.Request)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Imports.PublicHandlers.public_bimap_replacement",

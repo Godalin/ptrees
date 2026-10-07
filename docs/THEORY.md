@@ -152,9 +152,20 @@ signatures. Support transport and quotient-support proofs reuse these views;
 the observable Core, countable-AE, CouplingAE, OmegaAE, Diagonal and Fubini
 instances are now also closed under the global context, with native laws
 explicit in their types. This does not remove assumptions from concrete
-native instances. Structural and observable bind laws still use functional
-extensionality; other FreeOmega modules and `pstruct`/`pstrong` proofs are not
-claimed UIP-free.
+native instances. Observation uniqueness also uses a constructor view and
+is closed under the global context. Structural and observable bind laws
+still use functional extensionality, and structural coupling realization
+retains its existing classical choice dependencies.
+
+The `PStruct` transitivity, bind and iteration proofs and the `PStrong`
+transitivity and bind proofs now avoid UIP, without changing their statements.
+This also removes UIP from the generic interpreter's trigger law. The
+fixed-carrier inversion lemmas `pstrong_vis_inv` and `pstrong_prob_inv`
+still depend on `Eqdep.Eq_rect_eq.eq_rect_eq`: unlike the one-sided packaged
+views, they recover continuations at a specified hidden type. Both remaining
+dependencies are explicitly recorded in the contracts; no necessity or
+impossibility theorem for eliminating them is claimed. Other structural
+consumers are not automatically claimed UIP-free.
 
 Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
 The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper
