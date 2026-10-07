@@ -55,7 +55,19 @@ Lemma head_step_vis_label {R X} (e : E X) (k : X → ptree E MN R) label out :
   head_step (FHVis e k) label out →
   ∃ x, label = Obs e x ∧
     ptree_stable_hitting (MF := MF) (observe (k x)) out.
-Proof. intro H. dependent destruction H. eauto. Qed.
+Proof.
+  (** Keep the response existential while eliminating the transition. *)
+  assert (Hview : ∀ (h : stable_head E MN R) label out,
+    head_step h label out →
+    match h with
+    | FHRet _ => False
+    | @FHVis _ _ _ X e k =>
+        ∃ x, label = Obs e x ∧
+          ptree_stable_hitting (MF := MF) (observe (k x)) out
+    end).
+  { intros h l f Hstep. destruct Hstep. eauto. }
+  exact (Hview (FHVis e k) label out).
+Qed.
 
 Lemma head_step_unique `{FOL : @SemanticOmegaLaws MF FI FO}
     {R} (h : stable_head E MN R) label out1 out2 :

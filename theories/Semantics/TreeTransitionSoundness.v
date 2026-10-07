@@ -5,7 +5,6 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
@@ -61,7 +60,18 @@ Proof. intros. eapply peutt_hitting_lift; eassumption. Qed.
 Lemma related_heads_enable_same_label h k label : HR h k →
   (head_enabled h label ↔ head_enabled k label).
 Proof.
-  intro H. destruct H; split; intro Hen; dependent destruction Hen; constructor.
+  assert (Hforward : ∀ h k label, HR h k →
+    head_enabled h label → head_enabled k label).
+  { intros h' k' l Hrel Hen. destruct Hen.
+    apply stable_head_rel_view_intro in Hrel.
+    destruct Hrel as [next [-> _]]. constructor. }
+  intro H. split; [apply Hforward; exact H|].
+  intro Hen.
+  assert (Hreverse : stable_head_rel (λ b a, RR a b) (λ u t, W t u) k h).
+  { destruct H; constructor; assumption. }
+  destruct Hen.
+  apply stable_head_rel_view_intro in Hreverse.
+  destruct Hreverse as [next [-> _]]. constructor.
 Qed.
 
 Lemma peutt_head_action_results label h k out1 out2 :
@@ -70,11 +80,12 @@ Lemma peutt_head_action_results label h k out1 out2 :
 Proof.
   intros Hrel Hleft Hright.
   destruct Hleft as [Hstep1|Hno1 Hz1]; destruct Hright as [Hstep2|Hno2 Hz2].
-  - destruct Hrel.
-    + exfalso. eapply head_step_ret. exact Hstep1.
-    + dependent destruction Hstep1. apply head_step_vis_iff in Hstep2.
-      eapply sem_lift_mono; [apply peutt_stable_heads_as_trees|].
-      eapply peutt_couples_complete_heads; [apply H|exact H0|exact Hstep2].
+  - destruct Hstep1 as [X e next x out Hhit].
+    apply stable_head_rel_view_intro in Hrel.
+    destruct Hrel as [other [-> Hnext]].
+    apply head_step_vis_iff in Hstep2.
+    eapply sem_lift_mono; [apply peutt_stable_heads_as_trees|].
+    eapply peutt_couples_complete_heads; [apply Hnext|exact Hhit|exact Hstep2].
   - exfalso. apply Hno2. apply (proj1 (related_heads_enable_same_label label Hrel)).
     eapply head_step_enabled; exact Hstep1.
   - exfalso. apply Hno1. apply (proj2 (related_heads_enable_same_label label Hrel)).

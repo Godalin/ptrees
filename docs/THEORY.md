@@ -171,10 +171,23 @@ ordinary constructor elimination: all five `Interp/Structural.v` theorem
 endpoints are closed under the global context. Head bisimulation symmetry,
 transitivity, equivalence and step matching reuse the packaged stable-head
 view/composition lemmas and are likewise closed, with their semantic profile
-explicit. The fixed-event inversions `head_step_vis_iff`,
-`head_step_vis_label` and `head_bisim_vis_iff` still use UIP; their uniqueness
-and chosen/existential-hitting corollaries inherit it. This cleanup does not
-change their statements or claim that every transition consumer is UIP-free.
+explicit. `head_step_vis_label` now keeps the response existential in a
+one-sided constructor view and is also closed. Likewise,
+`related_heads_enable_same_label` transports enabling through related heads
+without fixing or inverting a response equality; it is closed even for an
+arbitrary return relation, not just equality.
+
+The stronger fixed-response/fixed-event inversions `head_step_vis_iff` and
+`head_bisim_vis_iff` still use UIP; their uniqueness and
+chosen/existential-hitting corollaries inherit it. The one-sided view only
+gives `label = Obs e y` for some response `y`; at a specified `Obs e x`,
+recovering the original `k x` requires an additional dependent-package
+alignment, not ordinary constructor elimination. `peutt_head_action_results`
+now uses the view for the first transition but still uses the fixed-response
+inversion for the second. Thus `peutt_preserves_trans`, `peutt_trans_bisim`
+and generic MDP transition coincidence retain their existing UIP dependency.
+No definitions or theorem statements were changed, and no necessity or
+impossibility result about eliminating this remaining dependency is claimed.
 
 The finite-observation transport `ptree_hitting_observes_pstruct` reuses
 `free_omega_observes_inv` and is closed under the global context. FreeOmega's

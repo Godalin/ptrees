@@ -2,6 +2,16 @@
   "description": "Generic MDP reflection/interpretation/atomic consumers. Explicit probability premises; no new classes. Direct clients remain in existing Gate M.",
   "endpoints": [
     {
+      "name": "PTree.Semantics.HeadTransition.head_step_vis_label",
+      "type": "@HeadTransition.head_step_vis_label\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI)\n         (R X : Type) (e : E X) (k : X -> PTreeDefinition.ptree E MN R)\n         (label : HeadTransition.obs_label E) (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @HeadTransition.head_step E MN MF FI MX FO R (@UnifiedFrontier.FHVis E MN R X e k) label out ->\n       exists x : X,\n         label = @HeadTransition.Obs E X e x /\\\n         @PTreeKernel.ptree_stable_hitting E MN MF FI MX FO R\n           (@PTreeDefinition.observe E MN R (k x)) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Semantics.TreeTransitionSoundness.related_heads_enable_same_label",
+      "type": "@TreeTransitionSoundness.related_heads_enable_same_label\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type) (RR : R -> R -> Prop)\n         (h k : UnifiedFrontier.stable_head E MN R) (label : HeadTransition.obs_label E),\n       @UnifiedFrontier.stable_head_rel E MN R R RR (@PEutt.peutt E MN MF FI FC MX FO R R RR) h k ->\n       @TreeTransition.head_enabled E MN R h label <-> @TreeTransition.head_enabled E MN R k label",
+      "assumptions": "Closed under the global context"
+    },
+    {
       "name": "PTree.Prob.Interface.Omega.sem_bind_eq_l",
       "type": "@Omega.sem_bind_eq_l\n     : forall (M : Type -> Type) (MI : Measure.SemanticMeasure M) (MO : @Omega.SemanticOmega M MI),\n       @Omega.SemanticMeasureOrderLaws M MI MO ->\n       @Omega.SemanticOmegaLaws M MI MO ->\n       @Omega.SemanticOmegaCofinalityLaws M MI MO ->\n       forall (A B : Type) (mu nu : M A) (k : A -> M B),\n       @Measure.sem_eq M MI A mu nu ->\n       @Measure.sem_eq M MI B (@Measure.sem_bind M MI A B mu k) (@Measure.sem_bind M MI A B nu k)",
       "assumptions": "Closed under the global context"

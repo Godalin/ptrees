@@ -49,6 +49,11 @@ In particular, `subenumQ_mdp_peutt_iff` and `enumQ_mdp_peutt_iff` no longer
 depend on UIP; their existing classical probability assumptions remain.
 The `trans_bisim` correspondence still inherits UIP from the generic
 fixed-event transition/fragment inversion path.
+The weaker existential-response result `head_step_vis_label` and
+`related_heads_enable_same_label` are now closed under the global context;
+neither substitutes for the fixed-response inversion needed by transition
+uniqueness and correspondence. This boundary is retained without adding an
+event injectivity assumption or changing the labelled-transition definition.
 
 `mdp_represent` accepts a separately represented source `D : MDP MS` and
 native rows `kernel : states D -> actions D -> MN (states D)`, preserving
