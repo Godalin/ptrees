@@ -210,7 +210,7 @@
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_cat_assoc",
       "type": "@HandlerCompletion.free_omega_handler_cat_assoc\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F G H : Type -> Type)\n         (h : Core.Handler.Handler MN E F) (g : Core.Handler.Handler MN F G)\n         (k : Core.Handler.Handler MN G H),\n       @HandlerRelation.peutt_handler E H MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO)\n         (@Handler.cat MN E G H (@Handler.cat MN E F G h g) k)\n         (@Handler.cat MN E F H h (@Handler.cat MN F G H g k))",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_handler_case_inl",
@@ -265,7 +265,7 @@
     {
       "name": "PTree.Tests.Imports.PublicHandlers.public_associativity",
       "type": "@PublicHandlers.public_associativity\n     : forall (E F G H : Type -> Type) (h : Core.Handler.Handler Representation.SubEnumQ E F)\n         (g : Core.Handler.Handler Representation.SubEnumQ F G)\n         (k : Core.Handler.Handler Representation.SubEnumQ G H) (X : Type)\n         (e : E X),\n       @Canonical.canonical_peutt H Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) X X (@eq X)\n         (@Handler.cat Representation.SubEnumQ E G H\n            (@Handler.cat Representation.SubEnumQ E F G h g) k X e)\n         (@Handler.cat Representation.SubEnumQ E F H h\n            (@Handler.cat Representation.SubEnumQ F G H g k) X e)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Imports.PublicHandlers.public_case_beta",
@@ -285,7 +285,7 @@
     {
       "name": "PTree.Examples.RealSamplingHandler.real_sampling_handler_rel",
       "type": "RealSamplingHandler.real_sampling_handler_rel\n     : forall (R : reals.Real.type) (mu : Representation.SubEnumR R bool)\n         (X : Type) (e : RealSamplingHandler.sourceE X),\n       @Canonical.canonical_peutt RealSamplingHandler.targetE (Representation.SubEnumR R)\n         (SubEnumR.SubEnumR_CanonicalBehavior R)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Coupling.SubEnumR_SemanticMeasureCoreLaws R)\n            (Omega.SubEnumR_SemanticOmega R)) X X (@eq X) (@RealSamplingHandler.sampling R mu X e)\n         (@RealSamplingHandler.sampling_delay R mu X e)",
-      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
     },
     {
       "name": "PTree.Examples.RealSamplingHandler.real_infinite_sampling",

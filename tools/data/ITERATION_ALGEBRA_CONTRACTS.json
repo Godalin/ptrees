@@ -45,12 +45,12 @@
     {
       "name": "PTree.Interp.FreeOmega.IterationAlgebra.free_omega_ptree_eq1",
       "type": "@IterationAlgebra.free_omega_ptree_eq1\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Omega.SemanticOmega MN NI ->\n       forall E : Type -> Type, Monad.Eq1 (PTreeDefinition.ptree E MN)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.FreeOmega.IterationAlgebra.free_omega_ptree_equivalence",
       "type": "@IterationAlgebra.free_omega_ptree_equivalence\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (E : Type -> Type),\n       @Monad.Eq1Equivalence (PTreeDefinition.ptree E MN) (@PTreeDefinition.Monad_ptree E MN)\n         (@IterationAlgebra.free_omega_ptree_eq1 MN NI NC NO E)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.FreeOmega.IterationAlgebra.free_omega_ptree_monad_laws",
@@ -65,7 +65,7 @@
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.eq1_is_canonical",
       "type": "@PTreeIterationAlgebra.eq1_is_canonical\n     : forall (F : Type -> Type) (A : Type)\n         (t u : PTreeDefinition.ptree F Representation.SubEnumQ A),\n       @Monad.eq1 (PTreeDefinition.ptree F Representation.SubEnumQ)\n         (@PTreeIterationAlgebra.target_eq1 F) A t u <->\n       @Canonical.canonical_peutt F Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A) t u",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.actual_monad_rewriting",

@@ -4,7 +4,7 @@
     {
       "name": "PTree.Prob.FreeOmega.RelationalLimit.free_omega_lift_lub",
       "type": "@RelationalLimit.free_omega_lift_lub\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (A B : Type) (RR : A -> B -> Prop)\n         (left : nat -> Definition.FreeOmega MN A) (right : nat -> Definition.FreeOmega MN B)\n         (out1 : Definition.FreeOmega MN A) (out2 : Definition.FreeOmega MN B),\n       @Omega.sem_lub (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A left out1 ->\n       @Omega.sem_lub (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B right out2 ->\n       (forall n : nat,\n        @Measure.sem_lift (Definition.FreeOmega MN)\n          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO) A B RR\n          (left n) (right n)) ->\n       @Measure.sem_lift (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO) A B RR out1 out2",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.Iter.iter_eventful_bisim_candidate",
@@ -94,7 +94,7 @@
     {
       "name": "PTree.Tests.Capabilities.RelationalConsumers.free_omega_eventful_iter",
       "type": "@RelationalConsumers.free_omega_eventful_iter\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I1 I2 A B : Type) (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + A))\n         (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + B)) (SI : I1 -> I2 -> Prop)\n         (RR : A -> B -> Prop),\n       @Iter.iter_eventful_generator_closed E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) I1 I2 A B step1 step2 SI RR ->\n       forall (i : I1) (j : I2),\n       SI i j ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR\n         (@PTreeDefinition.PTree.iter E MN A I1 step1 i)\n         (@PTreeDefinition.PTree.iter E MN B I2 step2 j)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Tests.Rewriting.GenericAlgebra.real_guarded_interp",

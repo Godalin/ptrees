@@ -216,7 +216,7 @@
     {
       "name": "PTree.Prob.FreeOmega.RelationalLimit.free_omega_relational_lub",
       "type": "@RelationalLimit.free_omega_relational_lub\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @Omega.SemanticOmega MN NI,\n       @RelationalClosure.relational_lub (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Prob.Backend.MathComp.RelationalClosure.mathcomp_relational_bind",
@@ -236,42 +236,42 @@
     {
       "name": "PTree.Tests.Capabilities.RelationalConsumers.completion_strong",
       "type": "@RelationalConsumers.completion_strong\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B : Type) (RR : A -> B -> Prop) (t : PTreeDefinition.ptree E MN A)\n         (u : PTreeDefinition.ptree E MN B),\n       @PStrong.pstrong E MN NI NC A B RR t u ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t u",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Tests.Capabilities.RelationalConsumers.completion_assoc",
       "type": "@RelationalConsumers.completion_assoc\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B C : Type) (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B)\n         (h : B -> PTreeDefinition.ptree E MN C),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) C C (@eq C)\n         (@PTreeDefinition.PTree.bind E MN B C (@PTreeDefinition.PTree.bind E MN A B t k) h)\n         (@PTreeDefinition.PTree.bind E MN A C t\n            (fun a : A => @PTreeDefinition.PTree.bind E MN B C (k a) h))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Relation.peutt_of_pstruct",
       "type": "@Relation.peutt_of_pstruct\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B : Type) (RR : A -> B -> Prop) (t1 : PTreeDefinition.ptree E MN A)\n         (t2 : PTreeDefinition.ptree E MN B),\n       @PStruct.pstruct E MN A B RR t1 t2 ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t1 t2",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Relation.peutt_of_pstrong",
       "type": "@Relation.peutt_of_pstrong\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B : Type) (RR : A -> B -> Prop) (t1 : PTreeDefinition.ptree E MN A)\n         (t2 : PTreeDefinition.ptree E MN B),\n       @PStrong.pstrong E MN NI NC A B RR t1 t2 ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t1 t2",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_bind_ret_l",
       "type": "@Algebra.peutt_bind_ret_l\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B : Type) (a : A) (k : A -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B B (@eq B)\n         (@PTreeDefinition.PTree.bind E MN A B\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) a\n            |} k) (k a)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_bind_ret_r",
       "type": "@Algebra.peutt_bind_ret_r\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@PTreeDefinition.PTree.bind E MN A A t\n            (fun x : A =>\n             {|\n               PTreeDefinition._observe :=\n                 @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) x\n             |})) t",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_bind_assoc",
       "type": "@Algebra.peutt_bind_assoc\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B C : Type) (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B)\n         (h : B -> PTreeDefinition.ptree E MN C),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) C C (@eq C)\n         (@PTreeDefinition.PTree.bind E MN B C (@PTreeDefinition.PTree.bind E MN A B t k) h)\n         (@PTreeDefinition.PTree.bind E MN A C t\n            (fun x : A => @PTreeDefinition.PTree.bind E MN B C (k x) h))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_fmap_id",
       "type": "@Algebra.peutt_fmap_id\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@PTreeDefinition.PTree.fmap E MN A A (fun x : A => x) t) t",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_fmap_compose",
@@ -281,12 +281,12 @@
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_fmap_bind",
       "type": "@Algebra.peutt_fmap_bind\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B C : Type) (f : B -> C) (t : PTreeDefinition.ptree E MN A)\n         (k : A -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) C C (@eq C)\n         (@PTreeDefinition.PTree.fmap E MN B C f (@PTreeDefinition.PTree.bind E MN A B t k))\n         (@PTreeDefinition.PTree.bind E MN A C t\n            (fun x : A => @PTreeDefinition.PTree.fmap E MN B C f (k x)))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Iter.peutt_iter_unfold",
       "type": "@Iter.peutt_iter_unfold\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I R : Type) (step : I -> PTreeDefinition.ptree E MN (I + R))\n         (i : I),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)\n         (@PTreeDefinition.PTree.iter E MN R I step i)\n         (@PTreeDefinition.PTree.bind E MN (I + R) R (step i)\n            (fun lr : I + R =>\n             match lr with\n             | @inl _ _ i' =>\n                 {|\n                   PTreeDefinition._observe :=\n                     @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R)\n                       (@PTreeDefinition.PTree.iter E MN R I step i')\n                 |}\n             | @inr _ _ r =>\n                 {|\n                   PTreeDefinition._observe :=\n                     @PTreeDefinition.RetF E MN R (PTreeDefinition.ptree E MN R) r\n                 |}\n             end))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Iter.peutt_iter_structural",
@@ -306,7 +306,7 @@
     {
       "name": "PTree.Eq.FreeOmega.Iter.peutt_iter_codiagonal",
       "type": "@Iter.peutt_iter_codiagonal\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I R : Type) (step : I -> PTreeDefinition.ptree E MN (I + (I + R)))\n         (i : I),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)\n         (@PTreeDefinition.PTree.iter E MN R I\n            (fun j : I => @PTreeDefinition.PTree.iter E MN (I + R) I step j) i)\n         (@PTreeDefinition.PTree.iter E MN R I\n            (@PStruct.pstruct_iter_codiagonal_flat_step E MN I R step) i)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     }
   ]
 }

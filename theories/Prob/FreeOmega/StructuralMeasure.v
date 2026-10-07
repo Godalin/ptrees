@@ -6,7 +6,6 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import FunctionalExtensionality.
-From Coq.Program Require Import Equality.
 Require Import Morphisms Arith.
 
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed.
@@ -39,6 +38,64 @@ Lemma free_omega_sem_retE {MN} `{NI : SemanticMeasure MN}
     (FreeOmegaSemanticMeasure (NI := NI)) A x = FORet x.
 Proof. reflexivity. Qed.
 
+(** Constructor views retain the dependent sample package instead of
+    identifying its components by UIP-based dependent inversion. They use
+    only the native operations, with no measure-law premise. *)
+Lemma free_omega_ae_inv {MN} `{NI : SemanticMeasure MN} {A}
+    (P : A → Prop) (mu : FreeOmega MN A) :
+  free_omega_ae P mu →
+  match mu with
+  | FORet x => P x
+  | FOZero => True
+  | @FOSample _ _ X node k =>
+      ∃ Good : X → Prop, sem_ae node Good ∧
+        ∀ x, Good x → free_omega_ae P (k x)
+  | FOLub c => ∀ n, free_omega_ae P (c n)
+  end.
+Proof.
+  intro H. destruct H; cbn; auto. exists Good. split; assumption.
+Qed.
+
+Lemma free_omega_lift_inv {MN} `{NI : SemanticMeasure MN} {A B}
+    (R : A → B → Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
+  free_omega_lift R mu nu →
+  match mu with
+  | FORet x => ∃ y, nu = FORet y ∧ R x y
+  | FOZero => nu = FOZero
+  | @FOSample _ _ X node k =>
+      ∃ Y (other : MN Y) (h : Y → FreeOmega MN B) (S : X → Y → Prop),
+        nu = FOSample other h ∧ sem_lift S node other ∧
+        ∀ x y, S x y → free_omega_lift R (k x) (h y)
+  | FOLub c => ∃ d, nu = FOLub d ∧ ∀ n, free_omega_lift R (c n) (d n)
+  end.
+Proof.
+  intro H. destruct H; cbn.
+  - exists y. split; [reflexivity|assumption].
+  - reflexivity.
+  - exists Y, nu, h, S. split; [reflexivity|]. split; assumption.
+  - exists d. split; [reflexivity|assumption].
+Qed.
+
+Lemma free_omega_approx_inv {MN} `{NI : SemanticMeasure MN} {A B}
+    (R : A → B → Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
+  free_omega_approx R mu nu →
+  match mu with
+  | FORet x => ∃ y, nu = FORet y ∧ R x y
+  | FOZero => True
+  | @FOSample _ _ X node k =>
+      ∃ Y (other : MN Y) (h : Y → FreeOmega MN B) (S : X → Y → Prop),
+        nu = FOSample other h ∧ sem_lift S node other ∧
+        ∀ x y, S x y → free_omega_approx R (k x) (h y)
+  | FOLub c => ∃ d, nu = FOLub d ∧ ∀ n, free_omega_approx R (c n) (d n)
+  end.
+Proof.
+  intro H. destruct H; cbn.
+  - exact I.
+  - exists y. split; [reflexivity|assumption].
+  - exists Y, nu, h, S. split; [reflexivity|]. split; assumption.
+  - exists d. split; [reflexivity|assumption].
+Qed.
+
 Section FreeOmegaLaws.
 Context {MN : Type → Type}
   `{NI : SemanticMeasure MN}
@@ -58,13 +115,15 @@ Lemma free_omega_ae_conj {A} (P Q : A → Prop) mu :
   free_omega_ae P mu → free_omega_ae Q mu →
   free_omega_ae (λ x, P x ∧ Q x) mu.
 Proof.
-  intros HP. revert Q. induction HP; intros Q HQ; dependent destruction HQ.
+  intros HP. revert Q. induction HP; intros Q HQ;
+    apply free_omega_ae_inv in HQ; cbn in HQ.
   - constructor. split; assumption.
   - constructor.
-  - eapply FOAESample with (Good := λ x, Good x ∧ Good0 x).
+  - destruct HQ as [Good0 [HQ HQk]].
+    eapply FOAESample with (Good := λ x, Good x ∧ Good0 x).
     + eapply sem_ae_conj; eassumption.
     + intros x [Hx Hx0]. eapply H1; eauto.
-  - constructor. intro n. eapply H0. exact (H1 n).
+  - constructor. intro n. eapply H0. exact (HQ n).
 Qed.
 
 Lemma free_omega_ae_bind {A B} (mu : FreeOmega MN A)
@@ -89,10 +148,11 @@ Proof.
   induction mu; cbn; intro Hae.
   - constructor. exact Hae.
   - constructor.
-  - dependent destruction Hae. eapply FOAESample; [exact H0|].
-    intros x Hx. exact (H x (H1 x Hx)).
-  - dependent destruction Hae. constructor. intro n.
-    exact (H n (H0 n)).
+  - apply free_omega_ae_inv in Hae. destruct Hae as [Good [HGood Hk]].
+    eapply FOAESample; [exact HGood|].
+    intros x Hx. exact (H x (Hk x Hx)).
+  - apply free_omega_ae_inv in Hae. constructor. intro n.
+    exact (H n (Hae n)).
 Qed.
 
 Lemma free_omega_lift_mono {A B} (R T : A → B → Prop) mu nu :
@@ -149,14 +209,16 @@ Proof.
   intros H12. revert C T xi.
   induction H12; intros C T xi H23.
   - constructor.
-  - dependent destruction H23. constructor. eexists. split; eassumption.
-  - dependent destruction H23.
+  - apply free_omega_approx_inv in H23. destruct H23 as [z [-> Hyz]].
+    constructor. eexists. split; eassumption.
+  - apply free_omega_approx_inv in H23.
+    destruct H23 as [Z [rho [h0 [S0 [-> [Hnode Hnext]]]]]].
     eapply FOApproxSample with
       (S := λ x z, exists y, S x y ∧ S0 y z).
     + eapply sem_lift_comp; eassumption.
     + intros x z [y [Hxy Hyz]]. eapply H1; eauto.
-  - dependent destruction H23. constructor. intro n.
-    eapply H0. exact (H1 n).
+  - apply free_omega_approx_inv in H23. destruct H23 as [d0 [-> Hchain]].
+    constructor. intro n. eapply H0. exact (Hchain n).
 Qed.
 
 Lemma free_omega_approx_trans {A}
@@ -201,14 +263,16 @@ Lemma free_omega_lift_comp {A B C}
   free_omega_lift (λ x z, ∃ y, R x y ∧ T y z) mu xi.
 Proof.
   intros H12. revert C T xi.
-  induction H12; intros C T xi H23; dependent destruction H23.
-  - constructor. eexists. split; eassumption.
-  - constructor.
-  - eapply FOLSample with
+  induction H12; intros C T xi H23; apply free_omega_lift_inv in H23.
+  - destruct H23 as [z [-> Hyz]]. constructor. eexists. split; eassumption.
+  - cbn in H23. subst xi. constructor.
+  - destruct H23 as [Z [rho [h0 [S0 [-> [Hnode Hnext]]]]]].
+    eapply FOLSample with
       (S := λ x z, exists y, S x y ∧ S0 y z).
     + eapply sem_lift_comp; eassumption.
     + intros x z [y [Hxy Hyz]]. eapply H1; eauto.
-  - constructor. intro n. eapply H0. exact (H1 n).
+  - destruct H23 as [d0 [-> Hchain]].
+    constructor. intro n. eapply H0. exact (Hchain n).
 Qed.
 
 #[local] Polymorphic Instance FreeOmegaSemanticMeasureCoreLaws :
@@ -268,17 +332,17 @@ Lemma free_omega_ae_countable
   free_omega_ae (λ x, ∀ n, P n x) mu.
 Proof.
   revert P. induction mu as [x| |X node k IH|chain IH]; intros P HP.
-  - constructor. intro n. specialize (HP n). dependent destruction HP.
-    assumption.
+  - constructor. intro n. exact (free_omega_ae_inv (HP n)).
   - constructor.
   - eapply FOAESample with
       (Good := λ x, ∀ n, free_omega_ae (P n) (k x)).
     + apply sem_ae_countable. intro n.
-      specialize (HP n). dependent destruction HP.
-      eapply sem_ae_mono; [|eassumption]. intros y Hy. eauto.
+      pose proof (free_omega_ae_inv (HP n)) as Hview.
+      destruct Hview as [Good [HGood Hk]].
+      eapply sem_ae_mono; [|exact HGood]. intros y Hy. exact (Hk y Hy).
     + intros x Hx. apply IH. exact Hx.
-  - constructor. intro m. apply IH. intro n. specialize (HP n).
-    dependent destruction HP. eauto.
+  - constructor. intro m. apply IH. intro n.
+    exact (free_omega_ae_inv (HP n) m).
 Qed.
 
 #[local] Polymorphic Instance FreeOmegaSemanticMeasureCountableAELaws
@@ -298,10 +362,11 @@ Lemma free_omega_lift_ae_restrict
   free_omega_lift (λ x y, R x y ∧ P x ∧ Q y) mu nu.
 Proof.
   intros Hlift. induction Hlift; intros HP HQ;
-    dependent destruction HP; dependent destruction HQ.
+    apply free_omega_ae_inv in HP; apply free_omega_ae_inv in HQ; cbn in HP, HQ.
   - constructor. repeat split; assumption.
   - constructor.
-  - eapply FOLSample with
+  - destruct HP as [Good [HP HPk]]. destruct HQ as [Good0 [HQ HQk]].
+    eapply FOLSample with
       (S := λ x y, S x y ∧ Good x ∧ Good0 y).
     + eapply sem_lift_ae_restrict; eassumption.
     + intros x y [Hxy [Hx Hy]]. eapply H1; eauto.
@@ -315,14 +380,14 @@ Lemma free_omega_lift_ae_transport_r
   free_omega_lift R mu nu → free_omega_ae P mu →
   free_omega_ae (λ y, ∃ x, R x y ∧ P x) nu.
 Proof.
-  intros Hlift HP. induction Hlift; dependent destruction HP.
+  intros Hlift HP. induction Hlift; apply free_omega_ae_inv in HP; cbn in HP.
   - constructor. exists x. split; assumption.
   - constructor.
-  - eapply FOAESample with
+  - destruct HP as [Good [HP HPk]]. eapply FOAESample with
       (Good := λ y, exists x, S x y ∧ Good x).
     + eapply sem_lift_ae_transport_r; eassumption.
     + intros y [x [Hxy Hx]]. eapply H1; eauto.
-  - constructor. intro n. exact (H0 n (H1 n)).
+  - constructor. intro n. exact (H0 n (HP n)).
 Qed.
 
 #[local] Polymorphic Instance FreeOmegaSemanticMeasureCouplingAELaws

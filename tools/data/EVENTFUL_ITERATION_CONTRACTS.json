@@ -45,7 +45,7 @@
     {
       "name": "PTree.Examples.Effects.EventfulIteration.heterogeneous_steps",
       "type": "EventfulIteration.heterogeneous_steps\n     : forall (i : unit) (j : nat),\n       EventfulIteration.state_rel i j ->\n       @Canonical.canonical_peutt EventfulIteration.questionE Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) (unit + bool) (nat + nat)\n         (@PStruct.pstruct_iter_sum_rel unit nat bool nat EventfulIteration.state_rel\n            EventfulIteration.return_rel) (EventfulIteration.left_step i)\n         (EventfulIteration.right_step j)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Examples.Effects.EventfulIteration.heterogeneous_eventful_iteration",
