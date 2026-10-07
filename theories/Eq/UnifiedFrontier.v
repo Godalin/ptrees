@@ -49,6 +49,43 @@ Qed.
 
 End StableHeadRelation.
 
+(** Eliminate a related head while keeping the visible response type, event,
+    and continuation together. This view needs no uniqueness of identity
+    proofs, unlike dependent inversion of two indexed relation witnesses. *)
+Definition stable_head_rel_view {E MN A B} (RR : A → B → Prop)
+    (sim : ptree E MN A → ptree E MN B → Prop)
+    (h1 : stable_head E MN A) (h2 : stable_head E MN B) : Prop :=
+  match h1 with
+  | FHRet a => ∃ b, h2 = FHRet b ∧ RR a b
+  | @FHVis _ _ _ X e k =>
+      ∃ l : X → ptree E MN B, h2 = FHVis e l ∧ ∀ x, sim (k x) (l x)
+  end.
+
+Lemma stable_head_rel_view_intro {E MN A B} RR sim
+    (h1 : stable_head E MN A) (h2 : stable_head E MN B) :
+  stable_head_rel RR sim h1 h2 → stable_head_rel_view RR sim h1 h2.
+Proof.
+  intro H. destruct H; cbn [stable_head_rel_view]; eexists; split;
+    [reflexivity|assumption|reflexivity|assumption].
+Qed.
+
+Lemma stable_head_rel_compose {E MN A B C}
+    (R12 : A → B → Prop) (R23 : B → C → Prop) (R13 : A → C → Prop)
+    (sim12 : ptree E MN A → ptree E MN B → Prop)
+    (sim23 : ptree E MN B → ptree E MN C → Prop)
+    (sim13 : ptree E MN A → ptree E MN C → Prop)
+    (Hret : ∀ a b c, R12 a b → R23 b c → R13 a c)
+    (Hsim : ∀ a b c, sim12 a b → sim23 b c → sim13 a c) h1 h2 h3 :
+  stable_head_rel R12 sim12 h1 h2 →
+  stable_head_rel R23 sim23 h2 h3 → stable_head_rel R13 sim13 h1 h3.
+Proof.
+  intros H12 H23. destruct H12.
+  - apply stable_head_rel_view_intro in H23. cbn [stable_head_rel_view] in H23.
+    destruct H23 as [c [-> Hbc]]. constructor. eapply Hret; eassumption.
+  - apply stable_head_rel_view_intro in H23. cbn [stable_head_rel_view] in H23.
+    destruct H23 as [k3 [-> Hk]]. constructor. intro x. eapply Hsim; eauto.
+Qed.
+
 Definition bind_frontier {E MN MF}
     `{FI : SemanticMeasure MF} {A B}
     (k : A → ptree E MN B)

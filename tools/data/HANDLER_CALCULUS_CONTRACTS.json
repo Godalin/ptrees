@@ -60,7 +60,7 @@
     {
       "name": "PTree.Interp.HandlerRelation.peutt_handler_equivalence",
       "type": "@HandlerRelation.peutt_handler_equivalence\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @RelationClasses.Equivalence (Core.Handler.Handler MN E F)\n         (@HandlerRelation.peutt_handler E F MN MF FI FC MX FO)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.HandlerRelation.handler_pair_kernel",

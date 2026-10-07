@@ -3,7 +3,7 @@
     The candidate may be heterogeneous; its left and right rewrites use
     homogeneous peutt eq. No property of the return relation is required.
     This is not up-to-transitivity of the unknown candidate. *)
-From Coq Require Import Utf8 Morphisms Program.Equality.
+From Coq Require Import Utf8 Morphisms.
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
@@ -86,9 +86,10 @@ Local Lemma match_rel_compose {A B C}
   matches R12 sim12 s1 s2 → matches R23 sim23 s2 s3 → matches R13 sim13 s1 s3.
 Proof.
   eapply stable_hitting_match_compose.
-  intros a b c Hab Hbc. dependent destruction Hab; dependent destruction Hbc.
-  - constructor. eapply Hret; eassumption.
-  - constructor. intro x. eapply Hsim; eauto.
+  intros a b c Hab Hbc.
+  eapply stable_head_rel_compose; [exact Hret| |exact Hab|exact Hbc].
+  intros x y z Hxy Hyz.
+  exact (Hsim (observe x) (observe y) (observe z) Hxy Hyz).
 Qed.
 
 (** Strong compatibility: C(F X) is included in F(C X). The outer

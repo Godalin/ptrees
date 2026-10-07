@@ -286,13 +286,16 @@ gluing/relational-limit premises or expand its two-file Gate M exception.
 StateT inference and commuting, high-universe returns and nonreturning
 source/handlers. The existing MathComp test file checks the conditional direct
 instance. New types/assumptions are appended to the existing `effect_execution`
-contract group; old entries are not regenerated. The generic agreement and
-its derived PTree laws depend only on the already tracked `Eq_rect_eq`
-logical axiom, besides their explicit semantic profile.
-The FreeOmega specializations additionally inherit the existing completion
-laws' dependent functional extensionality dependency, as recorded for the old
-handler calculus. The new specialization contracts stay within that same set;
-the user-facing rewrite chain does not introduce an extensionality proof.
+contract group. The generic agreement and its Ret/Tau/Vis/Prob, bind/iter,
+preservation and handler-composition laws are now closed under the global
+context, with their semantic profile explicit in the signatures. This follows
+from removing UIP-based head inversions in the generic behavioral proofs;
+the contract update preserves the compiled types and only reduces assumptions.
+The separate `interp_ptree_trigger` proof still depends on `Eq_rect_eq`.
+FreeOmega specializations retain the existing completion laws' `Eq_rect_eq`
+and dependent functional extensionality dependencies, as recorded for the
+handler calculus; the user-facing rewrite chain does not introduce an
+extensionality proof.
 
 ## Remaining boundaries
 

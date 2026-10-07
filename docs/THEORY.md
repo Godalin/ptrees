@@ -134,8 +134,14 @@ The proof composes generator-level hitting matches and frontier liftings,
 establishing `C(peuttF(X)) ⊆ peuttF(C(X))`. It needs frontier Core laws but
 no Bind laws, Omega laws, cofinality, hitting-existence or backend-specific
 validation premises; MixedMeasure and SemanticOmega supply operations.
-Its logical dependency is the existing `Eqdep.Eq_rect_eq.eq_rect_eq`, also
-used by heterogeneous head composition, with no added choice assumption.
+Both up-to-peutt rules are closed under the global context, apart from the
+semantic profile explicitly quantified in their signatures. Stable-head
+composition uses a dependent view retaining the response type, event and
+continuation together, rather than UIP-based dependent inversion. The same
+cleanup removes `Eqdep.Eq_rect_eq.eq_rect_eq` from `peutt_sym`, `peutt_trans`,
+heterogeneous `peutt_rel_compose`, `peutt_bind_cofinal` and up-to-bind.
+This is not an axiom-freedom claim for every backend or the whole library;
+the compiled contracts continue to record remaining dependencies separately.
 
 Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
 The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper

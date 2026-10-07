@@ -1121,12 +1121,12 @@
     {
       "name": "PTree.Eq.PEutt.peutt_endpoint_Proper",
       "type": "@PEutt.peutt_endpoint_Proper\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       @Morphisms.Proper (PTreeDefinition.ptree E MN A -> PTreeDefinition.ptree E MN A -> Prop)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN A)\n            (PTreeDefinition.ptree E MN A -> Prop) R\n            (@Morphisms.respectful (PTreeDefinition.ptree E MN A) Prop R Basics.impl))\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_equivalence",
       "type": "@PEutt.peutt_equivalence\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Equivalence (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_hitting_lift",
@@ -1206,17 +1206,17 @@
     {
       "name": "PTree.Eq.PEutt.peutt_rewrite",
       "type": "@PEutt.peutt_rewrite\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x x' y' y : PTreeDefinition.ptree E MN A,\n       R x x' ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x' y' ->\n       R y' y -> @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_rewrite_l",
       "type": "@PEutt.peutt_rewrite_l\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x x' y : PTreeDefinition.ptree E MN A,\n       R x x' ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x' y ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_rewrite_r",
       "type": "@PEutt.peutt_rewrite_r\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x y' y : PTreeDefinition.ptree E MN A,\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y' ->\n       R y' y -> @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_state_refl",
@@ -1226,12 +1226,12 @@
     {
       "name": "PTree.Eq.PEutt.peutt_sym",
       "type": "@PEutt.peutt_sym\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Symmetric (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_tau_Proper",
       "type": "@PEutt.peutt_tau_Proper\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall R : Type,\n       @Morphisms.Proper (PTreeDefinition.ptree E MN R -> PTreeDefinition.ptree E MN R)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN R) (PTreeDefinition.ptree E MN R)\n            (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))\n            (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R)))\n         (fun t : PTreeDefinition.ptree E MN R =>\n          {|\n            PTreeDefinition._observe :=\n              @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n          |})",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_tau_l",
@@ -1241,12 +1241,12 @@
     {
       "name": "PTree.Eq.PEutt.peutt_tau_r",
       "type": "@PEutt.peutt_tau_r\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R),\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R) t\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n         |}",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_trans",
       "type": "@PEutt.peutt_trans\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Transitive (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_vis",

@@ -409,14 +409,14 @@ Proof.
       destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
       exists out2. split; [exact Hhit2|].
       eapply sem_lift_mono; [|exact Hlift].
-      intros h1 h2 Hhead. dependent destruction Hhead.
+      intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
       * constructor. apply Hsub. exact H.
       * constructor. exact H.
     + intros out2 Hhit2.
       destruct (Hbackward out2 Hhit2) as [out1 [Hhit1 Hlift]].
       exists out1. split; [exact Hhit1|].
       eapply sem_lift_mono; [|exact Hlift].
-      intros h1 h2 Hhead. dependent destruction Hhead.
+      intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
       * constructor. apply Hsub. exact H.
       * constructor. exact H.
   - exact Hsource.
@@ -801,9 +801,9 @@ Lemma ptree_stable_head_rel_converse
   ∀ h1 h2, ptree_stable_head_rel eq sim h1 h2 →
     ptree_stable_head_rel eq (λ s2 s1, sim s1 s2) h2 h1.
 Proof.
-  intros h1 h2 Hrel. dependent destruction Hrel.
-  - constructor. reflexivity.
-  - constructor. intro x. auto.
+  intros h1 h2 Hrel. destruct Hrel.
+  - constructor. symmetry. assumption.
+  - constructor. assumption.
 Qed.
 
 Lemma ptree_stable_head_rel_compose
@@ -816,9 +816,10 @@ Lemma ptree_stable_head_rel_compose
     ptree_stable_head_rel eq sim13 h1 h3.
 Proof.
   intros h1 h3 [h2 [H12 H23]].
-  dependent destruction H12; dependent destruction H23.
-  - constructor. congruence.
-  - constructor. intro x. apply Hsim. eauto.
+  eapply stable_head_rel_compose; [| |exact H12|exact H23].
+  - intros a b c -> ->. reflexivity.
+  - intros x y z Hxy Hyz.
+    apply Hsim. exists (observe y). split; assumption.
 Qed.
 
 Theorem peutt_state_refl :
@@ -879,9 +880,9 @@ Proof.
   intros H12 H23. unfold peutt, peutt_state in H12, H23 |- *.
   eapply stable_hitting_bisim_compose; [|exact H12|exact H23].
   intros sim12 sim23 sim13 Hsim a1 a3 [a2 [Ha12 Ha23]].
-  dependent destruction Ha12; dependent destruction Ha23.
-  - constructor. eapply Hret; eassumption.
-  - constructor. intro x. apply Hsim. eauto.
+  eapply stable_head_rel_compose; [exact Hret| |exact Ha12|exact Ha23].
+  intros x y z Hxy Hyz.
+  apply Hsim. exists (observe y). split; assumption.
 Qed.
 
 #[global] Instance peutt_rel_endpoint_Proper {A B} (RR : A → B → Prop) :
@@ -1413,7 +1414,7 @@ Proof.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
         -- eapply sem_lift_bind; [exact Hlift|].
-           intros h1 h2 Hhead. dependent destruction Hhead.
+           intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
            ++ destruct (Hk r1 r2 H) as [Hrecursive|Hknown].
               ** eapply stable_hitting_match_hitting_lift.
                  --- exact (Hprogress _ _ Hrecursive).
@@ -1454,7 +1455,7 @@ Proof.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
         -- eapply sem_lift_bind; [exact Hlift|].
-           intros h1 h2 Hhead. dependent destruction Hhead.
+           intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
            ++ destruct (Hk r1 r2 H) as [Hrecursive|Hknown].
               ** eapply stable_hitting_match_hitting_lift.
                  --- exact (Hprogress _ _ Hrecursive).
@@ -1564,7 +1565,7 @@ Proof.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
         -- eapply sem_lift_bind; [exact Hlift|].
-        intros h1 h2 Hhead. dependent destruction Hhead.
+        intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros x1 x2 Hrel. left. exact Hrel.
@@ -1601,7 +1602,7 @@ Proof.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
         -- eapply sem_lift_bind; [exact Hlift|].
-        intros h1 h2 Hhead. dependent destruction Hhead.
+        intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros x1 x2 Hrel. left. exact Hrel.
@@ -1693,7 +1694,7 @@ Proof.
     + eapply sem_lift_proper_l.
       * eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
       * eapply sem_lift_bind; [exact Hlift|].
-        intros h1 h2 Hhead. dependent destruction Hhead.
+        intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros s1 s2 Hrel. exact Hrel.
@@ -1727,7 +1728,7 @@ Proof.
     + eapply sem_lift_proper_r.
       * eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
       * eapply sem_lift_bind; [exact Hlift|].
-        intros h1 h2 Hhead. dependent destruction Hhead.
+        intros h1 h2 Hhead. destruct Hhead as [r1 r2 H | X e k0 k3 H].
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros s1 s2 Hrel. exact Hrel.
