@@ -306,6 +306,12 @@ dependent constructor elimination without changing the handler premises or
 adding a new capability. These generic results do not automatically remove
 the assumptions of concrete backend instances.
 
+Generic eventful iteration (`peutt_iter_eventful_rel`), specified-carrier
+uniformity (`peutt_iter_uniform`), and State structural/strong preservation
+(`run_state_pstruct`, `run_state_pstrong`) also avoid UIP. Their proofs use
+ordinary constructor elimination and existing stable-head composition; their
+original semantic premises and theorem signatures are unchanged.
+
 ## Remaining boundaries
 
 The public algebra and rewrite surface is complete for the operations above.

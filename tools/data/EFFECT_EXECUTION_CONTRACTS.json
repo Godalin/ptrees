@@ -80,7 +80,7 @@
     {
       "name": "PTree.Interp.StateFacts.run_state_pstruct",
       "type": "@StateFacts.run_state_pstruct\n     : forall (S : Type) (E MN : Type -> Type) (A B : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (u : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN B)\n         (s : S),\n       @PStruct.pstruct (Sum.sum1 (State.stateE S) E) MN A B RR t u ->\n       @PStruct.pstruct E MN (S * A) (S * B) (@State.state_result_rel S A B RR)\n         (@State.run_state S E MN A t s) (@State.run_state S E MN B u s)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.StateFacts.run_state_bind",
@@ -90,7 +90,7 @@
     {
       "name": "PTree.Interp.StateStrong.run_state_pstrong",
       "type": "@StateStrong.run_state_pstrong\n     : forall (S : Type) (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (A B : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (u : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN B)\n         (s : S),\n       @PStrong.pstrong (Sum.sum1 (State.stateE S) E) MN NI NC A B RR t u ->\n       @PStrong.pstrong E MN NI NC (S * A) (S * B) (@State.state_result_rel S A B RR)\n         (@State.run_state S E MN A t s) (@State.run_state S E MN B u s)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.StateFold.state_effect",
@@ -375,7 +375,7 @@
     {
       "name": "PTree.Tests.Capabilities.MonadicInterpretation.state_interpretation",
       "type": "@MonadicInterpretation.state_interpretation\n     : forall (E F : Type -> Type)\n         (h : forall X : Type, E X -> PTreeDefinition.ptree F Representation.SubEnumQ X)\n         (S A : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) Representation.SubEnumQ A)\n         (s : S),\n       @Canonical.canonical_peutt F Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) (S * A) (S * A) (@eq (S * A))\n         (@StateFold.interp_state S E Representation.SubEnumQ\n            (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ)\n            (@PTreeDefinition.MonadIter_ptree F Representation.SubEnumQ)\n            (@MonadSample.MonadSample_ptree F Representation.SubEnumQ) h A t s)\n         (@PTreeDefinition.PTree.interp_tree E F Representation.SubEnumQ h\n            (S * A) (@State.run_state S E Representation.SubEnumQ A t s))",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Interp.FoldPTree.interp_ptree_handler_rel",

@@ -83,6 +83,14 @@ and session warnings remain separate from logical axioms; safe controls must
 remain untainted. The allowed set of Gate M source files is still exactly two:
 `theories/Eq/Backend/MathComp.v` and `tests/MathComp.v`.
 
+The historical field `session_collapsed_universes` records whether Rocq
+printed the collapsed-hierarchy warning in that endpoint's assumptions block.
+An axiom-free safe control may omit it even in the Gate M session; this does
+not make the session universe-checked. Absence is accepted only for safe
+controls with no logical axioms or unsafe declaration flag. Actual Gate M
+declarations must retain both the unsafe flag and the warning. Exact snapshot
+comparison still checks every field.
+
 Every expected type and assumptions block is compared exactly in its original
 context. The existing soundness whitelist is unchanged. Older mainline
 choice dependencies outside that narrower whitelist are listed per endpoint

@@ -8,8 +8,6 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From Coq.Program Require Import Equality.
-
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -37,26 +35,24 @@ Lemma ptree_hitting_pstruct {A B}
 Proof.
   revert t1 t2. induction fuel as [|fuel IH]; intros t1 t2 Hstruct.
   all: pose proof (pstruct_unfold Hstruct) as Hstep;
-    dependent destruction Hstep.
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    cbn [ptree_hitting_approx ptree_primitive_kernel]. constructor.
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    change (free_omega_lift
+    remember (observe t1) as o1 in Hstep |- *;
+    remember (observe t2) as o2 in Hstep |- *;
+    destruct Hstep.
+  - constructor. constructor. exact H.
+  - cbn [ptree_hitting_approx ptree_primitive_kernel]. constructor.
+  - constructor. constructor. exact H.
+  - change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstruct E MN A B RR))
       (FOSample mu (λ _, FOZero))
       (FOSample mu (λ _, FOZero))).
     eapply FOLSample with (S := eq).
     + apply sem_lift_refl. intros z. reflexivity.
     + intros z z' ->. constructor.
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    cbn [ptree_hitting_approx ptree_primitive_kernel].
+  - constructor. constructor. exact H.
+  - cbn [ptree_hitting_approx ptree_primitive_kernel].
     exact (IH _ _ H).
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    change (free_omega_lift
+  - constructor. constructor. exact H.
+  - change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstruct E MN A B RR))
       (FOSample mu (λ z, ptree_hitting_approx (MF := MF)
         fuel (observe (k1 z))))
@@ -87,23 +83,29 @@ Theorem ptree_hitting_observes_pstruct {A B O}
 Proof.
   revert t1 t2 out. induction fuel as [|fuel IH]; intros t1 t2 out Hstruct Hout;
     pose proof (pstruct_unfold Hstruct) as Hstep;
-    dependent destruction Hstep;
-    rewrite <- x0, <- x in *.
+    remember (observe t1) as o1 in Hstep, Hout |- *;
+    remember (observe t2) as o2 in Hstep |- *;
+    destruct Hstep.
   all: cbn [ptree_hitting_approx ptree_primitive_kernel
     stable_hitting_approx stable_target_approx sem_bind sem_ret mixed_bind
     free_omega_bind FreeOmegaMixedMeasure FreeOmegaObservableSemanticMeasure
     FreeOmegaSemanticMeasure] in *.
-  - dependent destruction Hout. rewrite (Hobs _ _ (FHRRet _ H)). constructor.
-  - dependent destruction Hout. constructor.
-  - dependent destruction Hout. rewrite (Hobs _ _ (FHRVis _ _ H)). constructor.
-  - dependent destruction Hout. eapply FOOObserveSample.
-    intro z. specialize (H z). dependent destruction H.
-    rewrite <- x. constructor.
-  - dependent destruction Hout. rewrite (Hobs _ _ (FHRRet _ H)). constructor.
+  - apply free_omega_observes_inv in Hout. cbn in Hout. subst out.
+    rewrite (Hobs _ _ (FHRRet _ H)). constructor.
+  - apply free_omega_observes_inv in Hout. cbn in Hout. subst out. constructor.
+  - apply free_omega_observes_inv in Hout. cbn in Hout. subst out.
+    rewrite (Hobs _ _ (FHRVis _ _ H)). constructor.
+  - apply free_omega_observes_inv in Hout. destruct Hout as [front [-> Hfront]].
+    eapply FOOObserveSample. intro z.
+    specialize (Hfront z). apply free_omega_observes_inv in Hfront.
+    rewrite Hfront. constructor.
+  - apply free_omega_observes_inv in Hout. cbn in Hout. subst out.
+    rewrite (Hobs _ _ (FHRRet _ H)). constructor.
   - eapply IH; eassumption.
-  - dependent destruction Hout. rewrite (Hobs _ _ (FHRVis _ _ H)). constructor.
-  - dependent destruction Hout. eapply FOOObserveSample.
-    intro z. eapply IH; [apply H0|apply H].
+  - apply free_omega_observes_inv in Hout. cbn in Hout. subst out.
+    rewrite (Hobs _ _ (FHRVis _ _ H)). constructor.
+  - apply free_omega_observes_inv in Hout. destruct Hout as [front [-> Hfront]].
+    eapply FOOObserveSample. intro z. eapply IH; [apply H|apply Hfront].
 Qed.
 
 (** State-level closure used to interpret syntax-sensitive structural
@@ -144,13 +146,13 @@ Lemma ptree_hitting_pstrong {A B}
 Proof.
   revert t1 t2. induction fuel as [|fuel IH]; intros t1 t2 Hstrong.
   all: pose proof (pstrong_unfold Hstrong) as Hstep;
-    dependent destruction Hstep.
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    cbn [ptree_hitting_approx ptree_primitive_kernel]. constructor.
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    change (free_omega_lift
+    remember (observe t1) as o1 in Hstep |- *;
+    remember (observe t2) as o2 in Hstep |- *;
+    destruct Hstep.
+  - constructor. constructor. exact H.
+  - cbn [ptree_hitting_approx ptree_primitive_kernel]. constructor.
+  - constructor. constructor. exact H.
+  - change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
       (FOSample mu (λ _, FOZero))
       (FOSample nu (λ _, FOZero))).
@@ -158,13 +160,11 @@ Proof.
       (S := λ a b, pstrong RR (k1 a) (k2 b)).
     + exact H.
     + intros a b Hab. constructor.
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    cbn [ptree_hitting_approx ptree_primitive_kernel].
+  - constructor. constructor. exact H.
+  - cbn [ptree_hitting_approx ptree_primitive_kernel].
     exact (IH _ _ H).
-  - rewrite <- x0, <- x. constructor. constructor. exact H.
-  - rewrite <- x0, <- x.
-    change (free_omega_lift
+  - constructor. constructor. exact H.
+  - change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
       (FOSample mu (λ a, ptree_hitting_approx (MF := MF)
         fuel (observe (k1 a))))

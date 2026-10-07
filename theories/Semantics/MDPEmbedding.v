@@ -49,7 +49,26 @@ Lemma mdp_choose_head_rel_iff {O A MN R1 R2} (RR : R1 → R2 → Prop)
   o1 = o2 ∧ ∀ a, sim (k1 a) (k2 a).
 Proof.
   split.
-  - intro H. dependent destruction H. split; [reflexivity|assumption].
+  - intro H. apply stable_head_rel_view_intro in H.
+    destruct H as [l [Heq Hsim]].
+    pose (observation := λ h : stable_head (mdpE O A) MN R2,
+      match h with
+      | FHRet _ => o1
+      | @FHVis _ _ _ X e _ => match e with Choose o => o end
+      end).
+    pose (continuation := λ h : stable_head (mdpE O A) MN R2,
+      match h with
+      | FHRet _ => k2
+      | @FHVis _ _ _ X e k =>
+          match e in mdpE _ _ Y return
+            (Y → ptree (mdpE O A) MN R2) → A → ptree (mdpE O A) MN R2 with
+          | Choose _ => λ c, c
+          end k
+      end).
+    pose proof (f_equal observation Heq) as Hobs.
+    pose proof (f_equal continuation Heq) as Hcont.
+    cbn [observation continuation] in Hobs, Hcont.
+    split; [symmetry; exact Hobs|]. rewrite Hcont. exact Hsim.
   - intros [-> H]. constructor. exact H.
 Qed.
 

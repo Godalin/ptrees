@@ -13,7 +13,6 @@ Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 
-From Coq.Program Require Import Equality.
 From ITree.Basics Require Import Monad.
 Require Import FunctionalExtensionality.
 From Coq.Arith Require Import PeanoNat.
@@ -767,7 +766,7 @@ Proof.
   eapply ptree_hitting_observes_pstruct with
     (RR := λ n s, s = (0%nat,n))
     (obs1 := λ h, obs (0%nat, walk_head_value h)).
-  - intros h1 h2 Hhead. dependent destruction Hhead.
+  - intros h1 h2 Hhead. destruct Hhead.
     + subst. reflexivity.
     + destruct e.
   - apply pstruct_converse. apply random_walk_result_relation.

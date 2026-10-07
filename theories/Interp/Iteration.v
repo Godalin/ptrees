@@ -7,7 +7,6 @@ From Coq Require Import Utf8.
 
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq.Program Require Import Equality.
 From Coinduction Require Import all.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder RelationalClosure.
@@ -148,7 +147,7 @@ Proof.
   - eapply sem_lift_bind.
     + eapply peutt_hitting_lift;
         [exact Htu|apply handler_complete_front_hitting|apply handler_complete_front_hitting].
-    + intros a b Hab. apply sem_lift_ret. dependent destruction Hab.
+    + intros a b Hab. apply sem_lift_ret. destruct Hab.
       * destruct H.
         -- apply IterationEntry. assumption.
         -- apply IterationExit. assumption.

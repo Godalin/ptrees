@@ -176,6 +176,23 @@ explicit. The fixed-event inversions `head_step_vis_iff`,
 and chosen/existential-hitting corollaries inherit it. This cleanup does not
 change their statements or claim that every transition consumer is UIP-free.
 
+The finite-observation transport `ptree_hitting_observes_pstruct` reuses
+`free_omega_observes_inv` and is closed under the global context. FreeOmega's
+`iter_complete_rows_behavioral_lift` and
+`peutt_iter_behavioral_rel_of_outputs` are likewise closed. The version that
+selects complete outputs, `peutt_iter_behavioral_rel`, still uses relational
+choice and dependent unique choice, but no UIP. Eliminating dependent
+inversion does not eliminate the separate choice of semantic witnesses.
+
+The maintained pGCL contracts, including State lowering, Q/R hitting,
+`walk_run`, `walk_classical_frontier` and `compile_hitting`, no longer depend
+on UIP. RandomWalk's `random_walk_ast`, `random_walk_outputs_spec` and
+`random_walk_closed_form` retain functional extensionality but no UIP.
+The rational upper evaluator's AE monotonicity/extensionality also reuse
+the existing FreeOmega AE view; their remaining classical mathematics is
+unchanged. These are per-endpoint dependency claims, not constructivity
+claims about all probability backends.
+
 Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
 The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper
 instances let a client use `setoid_rewrite` before re-entering its candidate;

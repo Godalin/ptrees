@@ -85,12 +85,12 @@
     {
       "name": "PTree.Interp.Algebra.Writer.run_writer_from_bind",
       "type": "@Writer.run_writer_from_bind\n     : forall (W : Type) (E MN : Type -> Type) (op : Monoid.Monoid W) (A B : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (k : A -> PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN B)\n         (log : W),\n       @PStruct.pstruct E MN (W * B) (W * B) (@eq (W * B))\n         (@Writer.run_writer_from W E MN B op\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (Writer.writerE W) E) MN A B t k) log)\n         (@PTreeDefinition.PTree.bind E MN (W * A) (W * B)\n            (@Writer.run_writer_from W E MN A op t log)\n            (fun wa : W * A => @Writer.run_writer_from W E MN B op (k (@snd W A wa)) (@fst W A wa)))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.Algebra.Writer.run_writer_bind",
       "type": "@Writer.run_writer_bind\n     : forall (W : Type) (E MN : Type -> Type) (op : Monoid.Monoid W) (A B : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (k : A -> PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN B),\n       @PStruct.pstruct E MN (W * B) (W * B) (@eq (W * B))\n         (@Writer.run_writer W E MN B op\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (Writer.writerE W) E) MN A B t k))\n         (@PTreeDefinition.PTree.bind E MN (W * A) (W * B) (@Writer.run_writer W E MN A op t)\n            (fun wa : W * A => @Writer.run_writer_from W E MN B op (k (@snd W A wa)) (@fst W A wa)))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.Algebra.Writer.run_writer_from_tell",
@@ -270,7 +270,7 @@
     {
       "name": "PTree.Examples.Effects.EffectAlgebra.sampling_before_throw_not_erasable",
       "type": "EffectAlgebra.sampling_before_throw_not_erasable\n     : reals.Real.type ->\n       ~\n       @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) (nat + unit) (nat + unit) (@eq (nat + unit))\n         (@Exception.run_exception nat Sum.void1 Representation.SubEnumQ unit\n            EffectAlgebra.sample_then_raise)\n         (@Exception.run_exception nat Sum.void1 Representation.SubEnumQ unit EffectAlgebra.raises)",
-      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}\nDescription.constructive_definite_description :\n  forall (A : Type) (P : A -> Prop), (exists ! x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}\nDescription.constructive_definite_description :\n  forall (A : Type) (P : A -> Prop), (exists ! x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
     },
     {
       "name": "PTree.Examples.Effects.EffectAlgebra.real_state_draw_swap",

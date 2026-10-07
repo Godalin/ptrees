@@ -40,6 +40,16 @@ labelled nonterminating `MDP MN`: every action is enabled and each transition
 row is total. State/action/observation carriers need not be finite. The
 coinductive PTree encoding follows `Vis Choose; Prob; repeat`.
 
+The encoding-specific inversion `mdp_choose_head_rel_iff` is closed under the
+global context: `Choose` has a fixed action carrier, so ordinary observation
+and continuation projections recover its fields without UIP or functional
+extensionality. This is not an axiom-freedom claim for generic fixed-event
+inversion, native/frontier reflection, or the full transition correspondence.
+In particular, `subenumQ_mdp_peutt_iff` and `enumQ_mdp_peutt_iff` no longer
+depend on UIP; their existing classical probability assumptions remain.
+The `trans_bisim` correspondence still inherits UIP from the generic
+fixed-event transition/fragment inversion path.
+
 `mdp_represent` accepts a separately represented source `D : MDP MS` and
 native rows `kernel : states D -> actions D -> MN (states D)`, preserving
 states, labels and actions. Its row-level faithfulness obligation is:

@@ -4,7 +4,7 @@ From Coq Require Import Utf8.
 
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Morphisms RelationClasses Program.Equality.
+From Coq Require Import Morphisms RelationClasses.
 From ExtLib.Structures Require Import Monad.
 From ITree.Basics Require Import Basics Monad.
 From Coinduction Require Import all.
@@ -89,9 +89,9 @@ Proof.
   intros Htu Huv. unfold peutt, peutt_state in Htu, Huv |- *.
   eapply stable_hitting_bisim_compose; [|exact Htu|exact Huv].
   intros sim12 sim23 sim13 Hsim h1 h3 [h2 [H12 H23]].
-  dependent destruction H12; dependent destruction H23.
-  - constructor. subst. assumption.
-  - constructor. intro x. apply Hsim. eauto.
+  eapply UnifiedFrontier.stable_head_rel_compose; [| |exact H12|exact H23].
+  - intros a b c Hab ->. exact Hab.
+  - intros a b c Hab Hbc. apply Hsim. exists (observe b). split; assumption.
 Qed.
 
 (** Specified-carrier uniformity. This deliberately is not packaged as the

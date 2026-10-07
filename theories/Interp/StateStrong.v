@@ -5,7 +5,6 @@ From Coq Require Import Utf8.
 
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
-From Coq.Program Require Import Equality.
 From Coinduction Require Import all.
 From ITree.Events Require Import State.
 From ITree.Indexed Require Import Sum.
@@ -37,8 +36,10 @@ Proof.
     change (pstrongF (state_result_rel RR) (` CH)
       (observe (run_state t0 s0)) (observe (run_state u0 s0))).
     rewrite !observe_run_state.
-    pose proof (pstrong_unfold Hs) as Hstep. dependent destruction Hstep;
-      rewrite <- x0, <- x; cbn.
+    pose proof (pstrong_unfold Hs) as Hstep.
+    remember (observe t0) as ot in Hstep |- *.
+    remember (observe u0) as ou in Hstep |- *.
+    destruct Hstep; cbn.
     - constructor. split; [reflexivity|exact H].
     - constructor. apply CIH. eexists _, _, _. repeat split; eauto.
     - destruct e as [se|fe].

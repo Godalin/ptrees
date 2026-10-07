@@ -6,7 +6,6 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
-From Coq.Program Require Import Equality.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals.
 Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.SemanticCoupling.
@@ -68,15 +67,15 @@ Theorem free_omega_upper_ae_mono {A} (mu : FreeOmega SubEnumQ A)
 Proof.
   intro Hg. induction mu as [x| |X node k IH|chain IH]; intro Hae;
     cbn [free_omega_upper].
-  - dependent destruction Hae. assumption.
+  - exact (free_omega_ae_inv Hae).
   - exact: lexx.
   - apply enumQ_real_expect_ae_mono.
     change (@sem_ae SubEnumQ SubEnumQ_SemanticMeasure X node
       (λ x, upper (k x) f <= upper (k x) g)).
     eapply sem_ae_mono; [|exact (free_omega_ae_sample_inv Hae)].
     intros x Hx. exact (IH x Hx).
-  - dependent destruction Hae. apply countable_upper_le. intro n.
-    apply: le_trans (IH n (H n)) _.
+  - apply free_omega_ae_inv in Hae. apply countable_upper_le. intro n.
+    apply: le_trans (IH n (Hae n)) _.
     exact (@countable_upper_ge F (λ i, upper (chain i) g) 1 n
       (λ i, proj2 (free_omega_upper_bounds (chain i) Hg))).
 Qed.

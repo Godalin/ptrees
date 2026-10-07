@@ -9,7 +9,6 @@ Set Universe Polymorphism.
 
 From PTree.Eq Require Import StableHittingRelation.
 From Coq.Logic Require Import ClassicalChoice.
-From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -177,7 +176,7 @@ Proof.
   - constructor. constructor.
   - cbn [iter_complete_rows].
     eapply FOQLBind; [exact (Hstep_lift Hij)|].
-    intros h1 h2 Hhead. dependent destruction Hhead.
+    intros h1 h2 Hhead. destruct Hhead.
     + destruct r1 as [j1|v1], r2 as [j2|v2];
         cbn [iter_head_next] in H |- *.
       * apply IH. exact H.

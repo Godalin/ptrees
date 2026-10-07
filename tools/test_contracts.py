@@ -129,6 +129,30 @@ class ContractSuiteTests(unittest.TestCase):
                 {**entry, 'unsafe_hierarchy': ['control']}]), self.assertRaises(AssertionError):
             audit.check_group({'id': 'control', 'context': 'gate-m'}, {}, [entry])
 
+    def test_missing_theory_warning_only_for_closed_safe_control(self):
+        original = Path.read_text
+        for target, assumptions, flag, accepted in [
+            (1, 'Closed under the global context', False, True),
+            (1, 'Axioms:\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P', False, False),
+            (0, 'Closed under the global context', False, False),
+            (1, 'Closed under the global context', 'false', False),
+        ]:
+            def changed(path, *args, **kw):
+                text = original(path, *args, **kw)
+                if path.name == 'DIRECT_ITERATION_CONTRACTS.json':
+                    data = json.loads(text)
+                    data['direct'][target].update(assumptions=assumptions,
+                        session_collapsed_universes=flag)
+                    return json.dumps(data)
+                return text
+            with self.subTest(target=target, assumptions=assumptions, flag=flag), \
+                 patch.object(Path, 'read_text', changed):
+                if accepted:
+                    audit.load_suites()
+                else:
+                    with self.assertRaises(AssertionError):
+                        audit.load_suites()
+
     def test_helpers_cannot_silently_succeed_as_old_audit_commands(self):
         for script in ['audit_assumptions.py', 'audit_mathcomp.py']:
             result = subprocess.run([sys.executable, 'tools/' + script],

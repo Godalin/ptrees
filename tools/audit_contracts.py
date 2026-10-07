@@ -72,8 +72,13 @@ def load_suites():
                 data['axiom_exceptions'].get(e['name'], [])), e['name']
             module = e['name'].rsplit('.', 1)[0].removeprefix('PTree.').replace('.', '/')
             if unsafe:
-                assert e['session_collapsed_universes'] is True
+                assert isinstance(e['session_collapsed_universes'], bool), e['name']
                 assert bool(e['unsafe_hierarchy']) == (module in GATE_M), e['name']
+                # Rocq omits the theory warning for axiom-free safe controls,
+                # even in this unchecked session. Actual Gate M declarations
+                # must still report both their unsafe flag and the warning.
+                if not e['session_collapsed_universes']:
+                    assert module not in GATE_M and not logical_axioms(e['assumptions']), e['name']
             else:
                 assert module not in GATE_M, 'Unchecked endpoint in safe group: ' + e['name']
         result.append((group, snapshot, entries))

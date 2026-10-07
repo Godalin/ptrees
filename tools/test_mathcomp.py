@@ -82,6 +82,10 @@ class MathCompTests(unittest.TestCase):
         safe = parse_gate_m(result(block.replace('probe relies on an unsafe hierarchy.\n', '')), ['probe'])[0]
         self.assertEqual(safe['unsafe_hierarchy'], [])
         self.assertTrue(safe['session_collapsed_universes'])
+        closed = parse_gate_m(result('Closed under the global context\n'), ['probe'])[0]
+        self.assertEqual(closed['unsafe_hierarchy'], [])
+        self.assertFalse(closed['session_collapsed_universes'])
+        self.assertEqual(closed['assumptions'], 'Closed under the global context')
         for bad in [block.replace('Theory:', 'UnknownTheory:'),
                     block.replace('Theory:\nType hierarchy is collapsed (logic is inconsistent)\n', ''),
                     block + 'new_transport_axiom : False\n', block + 'Error: failed\n']:
