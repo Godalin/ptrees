@@ -7,56 +7,31 @@ From ITree.Indexed Require Import Sum.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Execution Require Import Runner.
 From PTree.Execution.Backend Require Import RationalTickets.
-From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
 From PTree.Examples Require Import FactoryController.
-Import EnumQ GRing.Theory Num.Theory Order.Theory.
+Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Definition source_correct := controller_refinement.
 Definition state_correct := state_controller_refinement.
 Definition script_correct := scripted_controller_program_rewrite.
 
-Inductive closed_result (A Seed : Type) :=
-| Continue (t : ptree void1 EnumQ A) (s : Seed)
-| Done (r : outcome A) (s : Seed)
-| InvalidMeasure (s : Seed).
-Arguments Continue {A Seed} _ _.
-Arguments Done {A Seed} _ _.
-Arguments InvalidMeasure {A Seed} _.
-
 Definition closed_step {A Seed} (next : nat -> Seed -> option nat * Seed)
-    (t : ptree void1 EnumQ A) (s : Seed) : closed_result A Seed :=
-  match observe t with
-  | RetF a => Done (Returned a) s
-  | TauF u => Continue u s
-  | @VisF _ _ _ _ X e k => match e with end
-  | @ProbF _ _ _ _ X mu k =>
-      match Bool.bool_dec (enumQ_mass mu <= 1) true with
-      | left H => let '(draw, rest) := ticket_sample next (@enumQ_as_subprob X mu H) s in
-          match draw with
-          | Drawn x => Continue (k x) rest
-          | Missing => Done Lost rest
-          | NoEntropy => Done EntropyExhausted rest
-          end
-      | right _ => InvalidMeasure s
-      end
-  end.
+    (t : ptree void1 SubEnumQ A) (s : Seed) :=
+  runner_step (fun X => @ticket_sample Seed X next) t s.
 
 (* Typed live-device view; responses resume the actual extracted continuation.
    This is an IO adapter, NOT an extension of the verified closed Runner. *)
 Inductive live_result (A Seed : Type) :=
-| LiveContinue (t : ptree deviceE EnumQ A) (s : Seed)
+| LiveContinue (t : ptree deviceE SubEnumQ A) (s : Seed)
 | LiveDone (r : outcome A) (s : Seed)
-| LiveInvalid (s : Seed)
-| NeedOrder (k : nat -> ptree deviceE EnumQ A) (s : Seed)
-| NeedReply (job : nat) (fast : bool) (k : machine_reply -> ptree deviceE EnumQ A) (s : Seed)
-| DoShip (job : nat) (t : ptree deviceE EnumQ A) (s : Seed)
-| DoAlarm (job : nat) (t : ptree deviceE EnumQ A) (s : Seed)
-| NeedReset (t : ptree deviceE EnumQ A) (s : Seed).
+| NeedOrder (k : nat -> ptree deviceE SubEnumQ A) (s : Seed)
+| NeedReply (job : nat) (fast : bool) (k : machine_reply -> ptree deviceE SubEnumQ A) (s : Seed)
+| DoShip (job : nat) (t : ptree deviceE SubEnumQ A) (s : Seed)
+| DoAlarm (job : nat) (t : ptree deviceE SubEnumQ A) (s : Seed)
+| NeedReset (t : ptree deviceE SubEnumQ A) (s : Seed).
 Arguments LiveContinue {A Seed} _ _.
 Arguments LiveDone {A Seed} _ _.
-Arguments LiveInvalid {A Seed} _.
 Arguments NeedOrder {A Seed} _ _.
 Arguments NeedReply {A Seed} _ _ _ _.
 Arguments DoShip {A Seed} _ _ _.
@@ -64,12 +39,12 @@ Arguments DoAlarm {A Seed} _ _ _.
 Arguments NeedReset {A Seed} _ _.
 
 Definition live_step {A Seed} (next : nat -> Seed -> option nat * Seed)
-    (t : ptree deviceE EnumQ A) (s : Seed) : live_result A Seed :=
+    (t : ptree deviceE SubEnumQ A) (s : Seed) : live_result A Seed :=
   match observe t with
   | RetF a => LiveDone (Returned a) s
   | TauF u => LiveContinue u s
   | @VisF _ _ _ _ X e k =>
-      match e in deviceE Y return (Y -> ptree deviceE EnumQ A) -> live_result A Seed with
+      match e in deviceE Y return (Y -> ptree deviceE SubEnumQ A) -> live_result A Seed with
       | ReceiveOrder => fun k => NeedOrder k s
       | RunMachine j fast => fun k => NeedReply j fast k s
       | Ship j => fun k => DoShip j (k tt) s
@@ -77,14 +52,11 @@ Definition live_step {A Seed} (next : nat -> Seed -> option nat * Seed)
       | WaitReset => fun k => NeedReset (k tt) s
       end k
   | @ProbF _ _ _ _ X mu k =>
-      match Bool.bool_dec (enumQ_mass mu <= 1) true with
-      | left H => let '(draw, rest) := ticket_sample next (@enumQ_as_subprob X mu H) s in
-          match draw with
-          | Drawn x => LiveContinue (k x) rest
-          | Missing => LiveDone Lost rest
-          | NoEntropy => LiveDone EntropyExhausted rest
-          end
-      | right _ => LiveInvalid s
+      let '(draw, rest) := ticket_sample next mu s in
+      match draw with
+      | Drawn x => LiveContinue (k x) rest
+      | Missing => LiveDone Lost rest
+      | NoEntropy => LiveDone EntropyExhausted rest
       end
   end.
 Definition live_impl := device_controller_impl initial_counters.

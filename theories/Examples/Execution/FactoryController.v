@@ -10,12 +10,13 @@ From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From ITree.Indexed Require Import Sum.
 From PTree Require Import PTreeFacts.
-From PTree.Eq.Backend Require Import EnumQ ProbabilisticTraceEnumQ.
+From PTree.Eq.Backend Require Import SubEnumQ ProbabilisticTraceSubEnumQ.
 From PTree.Interp Require Import State.
-From PTree.Examples.BernoulliFactory Require Import BernoulliFactory.
+From PTree.Examples.BernoulliFactory Require Import BernoulliFactory BoundedFactory.
 From PTree.Examples Require Import FactoryController.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
+Local Open Scope subenumQ_probability_scope.
 Set Default Timeout 20.
 
 (** Expose only the next operational node, then use the public Tau/Vis laws. *)
@@ -41,22 +42,22 @@ Local Notation "'Run' sampler" :=
   (at level 10, sampler at next level).
 
 Example full_program_target_zero :
-  Run (biased_to_rational_coin (ltW pfpos) (ltW ptpos) 0) ≈ₚ
-  Run (factory_direct_q (lexx (0 : rat)) (ler01 : (0 : rat) <= 1)).
-Proof. apply factory_controller_program_rewrite. exact pnorm. Qed.
+  Run (BoundedVonNeumann.factory (ltW pfpos) (ltW ptpos) pnorm 0) ≈ₚ
+  Run (direct_q (lexx (0 : rat)) (ler01 : (0 : rat) <= 1)).
+Proof. apply factory_controller_program_rewrite. Qed.
 
 Example full_program_target_one :
-  Run (biased_to_rational_coin (ltW pfpos) (ltW ptpos) 1) ≈ₚ
-  Run (factory_direct_q (ler01 : (0 : rat) <= 1) (lexx (1 : rat))).
-Proof. apply factory_controller_program_rewrite. exact pnorm. Qed.
+  Run (BoundedVonNeumann.factory (ltW pfpos) (ltW ptpos) pnorm 1) ≈ₚ
+  Run (direct_q (ler01 : (0 : rat) <= 1) (lexx (1 : rat))).
+Proof. apply factory_controller_program_rewrite. Qed.
 End TargetEndpoints.
 
 Example next_fast_after_state :
-  Prₜ[ run_state (controller implementation_sampler (Manufacturing 17)) initial_counters |
+  Prₛ[ run_state (controller implementation_sampler (Manufacturing 17)) initial_counters |
     [@select_mode true] ] = 2/5.
 Proof. apply factory_next_action_probability. Qed.
 Example next_safe_after_state :
-  Prₜ[ run_state (controller implementation_sampler (Manufacturing 17)) initial_counters |
+  Prₛ[ run_state (controller implementation_sampler (Manufacturing 17)) initial_counters |
     [@select_mode false] ] = 3/5.
 Proof. apply factory_next_action_probability. Qed.
 

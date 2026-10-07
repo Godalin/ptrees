@@ -1,6 +1,6 @@
 (** Case role: paper case study.
     Reading entry: Rewriting.factory_controller_program_rewrite.
-    Scope: EnumQ / observable FreeOmega; native validity and quantitative results are separate.
+    Scope: SubEnumQ / observable FreeOmega; native bounds are intrinsic.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** Learn: a complete rewrite calculation through sampler and handler contexts.
     Reusable endpoints: Rewriting.factory_controller_program_rewrite; Observation.factory_next_action_probability.
@@ -13,8 +13,7 @@
     2. Scripted: State/Exception/device interpretation and executable roots.
     3. Rewriting: the self-contained, full-program algebraic calculation.
     4. Facts: reusable congruences and short refinement corollaries.
-    5. Probability: native sampling validity.
-    6. Observation: exact next-action distribution and probabilities.
+    5. Observation: exact next-action distribution and probabilities.
 
     The internal modules isolate local notation/instances and retain the
     existing qualified declaration names. Tests and the OCaml host remain
@@ -35,20 +34,20 @@ From ITree.Events Require Import State Exception.
 From ITree.Indexed Require Import Sum.
 From PTree Require Import PTreeFacts.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Eq Require Import WellFormedness Shallow ProbabilisticTrace PTreeKernel.
-From PTree.Eq.Backend Require Import EnumQ ProbabilisticTraceEnumQ.
+From PTree.Eq Require Import Shallow ProbabilisticTrace PTreeKernel.
+From PTree.Eq.Backend Require Import SubEnumQ ProbabilisticTraceSubEnumQ.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
 From PTree.Prob.Backend.Common Require Import FiniteEnum.
-From PTree.Prob.Backend.EnumQ Require Import Representation Measure Bind.
-From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Backend.EnumQ Require Import Representation Bind.
+From PTree.Prob.Backend.SubEnumQ Require Import Representation Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.Observation.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure RelationalLimit.
 From PTree.Interp Require Import State StateFacts Exception ExceptionFacts IterationUniform.
 From PTree.Interp.FreeOmega Require Import Base Unrestricted State Rewriting.
 From PTree.Examples.BernoulliFactory Require Import
-  BernoulliFactory BernoulliFactoryComposition BernoulliFactoryProbability
-  OperationalBernoulliFactory VonNeumannUnbounded RationalBernoulli.
+  BernoulliFactory BoundedFactory VonNeumannUnbounded RationalBernoulli.
+Import BoundedFactory.
 
 Import MonadNotation SemanticMeasureNotations.
 Local Open Scope monad_scope.
@@ -56,13 +55,15 @@ Local Open Scope semantic_measure_scope.
 Local Open Scope freeomega_scope.
 Import HittingNotations.
 Local Open Scope hitting_scope.
+Local Open Scope subenumQ_probability_scope.
+
+Import EnumQ.
 
 Module Controller.
 (** Interactive factory: the existing nested sampler, not a new algorithm.
     Three independent sources of unbounded behavior: VN, binary factory,
     and the reactive service (including environment-driven retries). *)
 
-Import EnumQ.
 
 Inductive machine_reply := Pass | Rework | Jam.
 Variant deviceE : Type → Type :=
@@ -78,7 +79,7 @@ Definition count_pass s := Counters (S (completed s)) (retries s) (jams s).
 Definition count_rework s := Counters (completed s) (S (retries s)) (jams s).
 Definition count_jam s := Counters (completed s) (retries s) (S (jams s)).
 Definition controllerE := sum1 (stateE counters) deviceE.
-Definition tree := ptree controllerE EnumQ.
+Definition tree := ptree controllerE SubEnumQ.
 Inductive phase := AwaitOrder | Manufacturing (job : nat).
 
 Definition emit {X} (e : deviceE X) : tree X := PTree.trigger (inr1 e).
@@ -112,10 +113,15 @@ Definition controller_step sampler (pc : phase) : tree (phase + Empty_set) :=
 Definition controller sampler pc : tree Empty_set := PTree.iter (controller_step sampler) pc.
 
 (** Closed source sampler is embedded by the ordinary interpreter. *)
-Definition embed {E A} (t : ptree factoryE EnumQ A) : ptree E EnumQ A :=
+Definition embed {E A} (t : ptree factoryE SubEnumQ A) : ptree E SubEnumQ A :=
   PTree.interp_tree (λ X (e : factoryE X), match e with end) t.
-Definition implementation_sampler : tree bool := embed third_to_two_fifths.
-Definition specification_sampler : tree bool := embed direct_two_fifths.
+Definition direct_q (q : rat) (q0 : (0 <= q)%R) (q1 : (q <= 1)%R) : ptree factoryE SubEnumQ bool :=
+  sample (bernoulli q0 q1).
+Definition implementation_sampler : tree bool :=
+  embed (BoundedVonNeumann.factory third_false_nonnegative third_true_nonnegative
+    third_bias_normalized (2/5)%R).
+Definition specification_sampler : tree bool :=
+  embed (direct_q two_fifths_nonnegative two_fifths_at_most_one).
 Definition controller_impl := controller implementation_sampler AwaitOrder.
 Definition controller_spec := controller specification_sampler AwaitOrder.
 Definition device_controller_impl s := run_state controller_impl s.
@@ -128,7 +134,7 @@ Module Scripted.
     program termination. Internal samplers still have no retry bound. *)
 
 Import Controller.
-Import ListNotations EnumQ.
+Import ListNotations.
 
 Inductive log_entry :=
 | Accepted (job : nat)
@@ -142,7 +148,7 @@ Record script_state := Script {
   reverse_log : list log_entry
 }.
 Definition scriptE := sum1 (stateE script_state) (sum1 (exceptE script_state) void1).
-Definition script_tree := ptree scriptE EnumQ.
+Definition script_tree := ptree scriptE SubEnumQ.
 
 Definition stop_experiment {A} (s : script_state) : script_tree A := Exception.throw s.
 Definition remember {A} (s : script_state) (v : A) : script_tree A :=
@@ -165,7 +171,7 @@ Definition device_handler X (e : deviceE X) : script_tree X :=
   | WaitReset => remember (Script (orders s) (replies s) (ResetAcknowledged :: reverse_log s)) tt
   end.
 
-Definition close_controller (t : ptree deviceE EnumQ (counters * Empty_set)) s :=
+Definition close_controller (t : ptree deviceE SubEnumQ (counters * Empty_set)) s :=
   run_exception (run_state (PTree.interp_tree device_handler t) s).
 Definition scripted_impl counts s := close_controller (device_controller_impl counts) s.
 Definition scripted_spec counts s := close_controller (device_controller_spec counts) s.
@@ -193,26 +199,13 @@ Local Open Scope ring_scope.
 (** Select the observable interpretation explicitly. This is notation for
     the raw generic relation, not a second relation or a canonical wrapper. *)
 Local Notation W :=
-  (PEutt.peutt (MN := EnumQ) (MF := FreeOmega EnumQ)
-    (FI := @FreeOmegaObservableSemanticMeasure EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
-    (FC := @FreeOmegaObservableSemanticMeasureCoreLaws EnumQ EnumQ_SemanticMeasure EnumQ_SemanticMeasureCoreLaws EnumQ_SemanticOmega)
-    (MX := @StructuralMeasure.FreeOmegaMixedMeasure EnumQ)
-    (FO := @FreeOmegaObservableSemanticOmega EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)).
+  (PEutt.peutt (MN := SubEnumQ) (MF := FreeOmega SubEnumQ)
+    (FI := @FreeOmegaObservableSemanticMeasure SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega)
+    (FC := @FreeOmegaObservableSemanticMeasureCoreLaws SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticMeasureCoreLaws SubEnumQ_SemanticOmega)
+    (MX := @StructuralMeasure.FreeOmegaMixedMeasure SubEnumQ)
+    (FO := @FreeOmegaObservableSemanticOmega SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega)).
 Local Notation "t ≈ₚ u" := (W eq t u)
   (at level 70, no associativity) : type_scope.
-
-(** Local analysis endpoint: the native finite-round calculation is isolated
-    here; the program calculation consumes only its behavioral equation. *)
-Lemma fair_binary_round_step x :
-  sample (vn_fair >>=ₘ λ b, ηₘ (binary_round_result x b))
-    ≈ₚ factory_standard_step x.
-Proof.
-  change (Prob (bind_EnumQ vn_fair
-    (λ b, ret_EnumQ (binary_round_result x b))) (λ a, Ret a)
-    ≈ₚ factory_standard_step x).
-  unfold factory_standard_step.
-  rewrite fair_binary_round_measure. reflexivity.
-Qed.
 
 Section FullProgram.
 Variables pfalse ptrue q : rat.
@@ -232,28 +225,20 @@ Local Notation "'Run' sampler" :=
   (at level 10, sampler at next level).
 
 Theorem factory_controller_program_rewrite :
-  Run (biased_to_rational_coin pf0 pt0 q) ≈ₚ Run (factory_direct_q q0 q1).
+  Run (BoundedVonNeumann.factory pf0 pt0 pnorm q) ≈ₚ Run (direct_q q0 q1).
 Proof.
   assert (Hstep : pointwise_relation phase (W eq)
-    (controller_step (embed (biased_to_rational_coin pf0 pt0 q)))
-    (controller_step (embed (factory_direct_q q0 q1)))).
+    (controller_step (embed (BoundedVonNeumann.factory pf0 pt0 pnorm q)))
+    (controller_step (embed (direct_q q0 q1)))).
   { intros [|job]; cbn [controller_step]; [reflexivity|].
     unfold attempt, embed.
-    unfold biased_to_rational_coin.
-    (* 1. Factory(VN(p),q) -> Factory(Fair,q).
-          First and only VN probability-analysis lemma. *)
-    setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
-
-    (* 2. Open the outer factory loop; distribute bind through sampling,
-          eliminate Ret, and combine the finite sampling/return step. *)
-    unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
-    setoid_rewrite (peutt_sample_bind vn_fair).
-    setoid_rewrite (peutt_sample_map vn_fair).
-    setoid_rewrite fair_binary_round_step.
-
-    (* 3. The residual sampler is the standard binary loop. *)
-    (* Second probability-analysis lemma: the unbounded binary loop's law. *)
-    setoid_rewrite (peutt_factory_standard_direct q0 q1).
+    unfold BoundedVonNeumann.factory, direct_q, factory_with_sampler, factory_sampler_step.
+    (* 1. Replace the unbounded two-draw VN sampler by one fair draw. *)
+    setoid_rewrite (BoundedVonNeumann.sampler_fair pf0 pt0 pnorm
+      (mulr_gt0 pfpos ptpos)).
+    fold (@factory_with_sampler factoryE SubEnumQ (sample fair_coin) q).
+    (* 2. Replace the fair-bit binary factory by its direct Bernoulli law. *)
+    setoid_rewrite (BoundedFactory.fair_factory_direct q0 q1).
     reflexivity.
   }
   unfold controller.
@@ -268,7 +253,7 @@ Corollary scripted_controller_program_rewrite counts script :
 Proof.
   unfold scripted_impl, scripted_spec, close_controller,
     device_controller_impl, device_controller_spec, controller_impl, controller_spec,
-    implementation_sampler, specification_sampler, third_to_two_fifths, direct_two_fifths.
+    implementation_sampler, specification_sampler.
   have pfpos : 0 < vn_one_third by vm_compute; reflexivity.
   have ptpos : 0 < vn_two_thirds by vm_compute; reflexivity.
   (* The extracted program keeps its original nonnegativity certificates.
@@ -276,7 +261,6 @@ Proof.
   replace third_false_nonnegative with (ltW pfpos) by apply bool_irrelevance.
   replace third_true_nonnegative with (ltW ptpos) by apply bool_irrelevance.
   apply factory_controller_program_rewrite.
-  exact third_bias_normalized.
 Qed.
 End Rewriting.
 
@@ -288,12 +272,20 @@ Import Controller.
 Import Scripted.
 Import FreeOmegaRewriting.
 
-Lemma embed_preserves {E A} (t u : ptree factoryE EnumQ A) :
+Lemma embed_preserves {E A} (t u : ptree factoryE SubEnumQ A) :
   t ≈ₚ u → @embed E A t ≈ₚ embed u.
 Proof. apply peutt_interp. Qed.
 
 Theorem implementation_sampler_correct : implementation_sampler ≈ₚ specification_sampler.
-Proof. apply embed_preserves. exact peutt_third_to_two_fifths_compositional. Qed.
+Proof.
+  unfold implementation_sampler, specification_sampler, BoundedVonNeumann.factory, direct_q, embed,
+    factory_with_sampler, factory_sampler_step.
+  setoid_rewrite (BoundedVonNeumann.sampler_fair third_false_nonnegative
+    third_true_nonnegative third_bias_normalized third_bias_nontrivial).
+  fold (@factory_with_sampler factoryE SubEnumQ (sample fair_coin) (2/5)%R).
+  setoid_rewrite (BoundedFactory.fair_factory_direct two_fifths_nonnegative two_fifths_at_most_one).
+  reflexivity.
+Qed.
 
 Lemma controller_step_congr s t : s ≈ₚ t →
   pointwise_relation phase (λ x y, x ≈ₚ y) (controller_step s) (controller_step t).
@@ -322,7 +314,7 @@ Proof. apply run_state_peutt_eq. exact controller_refinement. Qed.
 
 (** Any device interpretation, not only the scripted demo, preserves the
     source refinement. No liveness assumption about device responses. *)
-Theorem device_handler_refinement {F} (h : ∀ X, deviceE X → ptree F EnumQ X) s :
+Theorem device_handler_refinement {F} (h : ∀ X, deviceE X → ptree F SubEnumQ X) s :
   PTree.interp_tree h (device_controller_impl s) ≈ₚ
   PTree.interp_tree h (device_controller_spec s).
 Proof. apply peutt_interp. apply state_controller_refinement. Qed.
@@ -343,76 +335,17 @@ Variables pfalse ptrue q : rat.
 Variables (pf0 : 0 <= pfalse) (pt0 : 0 <= ptrue) (q0 : 0 <= q) (q1 : q <= 1).
 Hypotheses (pnorm : pfalse + ptrue = 1) (pnontrivial : 0 < pfalse * ptrue).
 Theorem rational_controller_refinement pc :
-  controller (embed (biased_to_rational_coin pf0 pt0 q)) pc ≈ₚ
-  controller (embed (factory_direct_q q0 q1)) pc.
+  controller (embed (BoundedVonNeumann.factory pf0 pt0 pnorm q)) pc ≈ₚ
+  controller (embed (direct_q q0 q1)) pc.
 Proof.
   apply controller_congr, embed_preserves.
-  exact (peutt_factory_vn_direct q0 q1 pf0 pt0 pnorm pnontrivial).
+  unfold BoundedVonNeumann.factory, direct_q, factory_with_sampler, factory_sampler_step.
+  setoid_rewrite (BoundedVonNeumann.sampler_fair pf0 pt0 pnorm pnontrivial).
+  fold (@factory_with_sampler factoryE SubEnumQ (sample fair_coin) q).
+  setoid_rewrite (BoundedFactory.fair_factory_direct q0 q1). reflexivity.
 Qed.
 End RationalParameters.
 End Facts.
-
-Module Probability.
-(** The retained legacy factory uses raw EnumQ. Its use here is a genuine
-    probability program, not arbitrary finite weights. No termination claim
-    is needed for this node-validity invariant. *)
-
-Import Controller.
-Import EnumQ.
-
-Lemma embed_probability {E A} (t : ptree factoryE EnumQ A) :
-  probabilistic_ptree t → probabilistic_ptree (@embed E A t).
-Proof.
-  revert t. cofix CIH. intros t H.
-  unfold probabilistic_ptree, embed in *.
-  rewrite observe_interp. destruct H.
-  - constructor.
-  - constructor. apply CIH. assumption.
-  - destruct e.
-  - constructor; [assumption|]. intro x. apply CIH. apply H0.
-Qed.
-
-Lemma update_probability f : probabilistic_ptree (update f).
-Proof.
-  unfold update, State.get, State.put, PTree.trigger.
-  apply probabilistic_ptree_bind.
-  - apply probabilistic_ptree_vis. intro s. apply probabilistic_ptree_ret.
-  - intro s. apply probabilistic_ptree_vis. intro u. apply probabilistic_ptree_ret.
-Qed.
-
-Lemma respond_probability j r : probabilistic_ptree (respond j r).
-Proof.
-  destruct r; cbn [respond]; apply probabilistic_ptree_bind;
-    try apply update_probability; intro u.
-  - apply probabilistic_ptree_bind.
-    + apply probabilistic_ptree_vis. intro x. apply probabilistic_ptree_ret.
-    + intro x. apply probabilistic_ptree_ret.
-  - apply probabilistic_ptree_ret.
-  - apply probabilistic_ptree_bind.
-    + apply probabilistic_ptree_vis. intro x. apply probabilistic_ptree_ret.
-    + intro x. apply probabilistic_ptree_bind.
-      * apply probabilistic_ptree_vis. intro y. apply probabilistic_ptree_ret.
-      * intro y. apply probabilistic_ptree_ret.
-Qed.
-
-Theorem controller_probability sampler pc :
-  probabilistic_ptree sampler → probabilistic_ptree (controller sampler pc).
-Proof.
-  intro H. apply probabilistic_ptree_iter. intros [|j].
-  - apply probabilistic_ptree_vis. intro x. apply probabilistic_ptree_ret.
-  - apply probabilistic_ptree_bind; [exact H|].
-    intro b. apply probabilistic_ptree_vis. intro r. apply respond_probability.
-Qed.
-
-Theorem implementation_probability : probabilistic_ptree controller_impl.
-Proof.
-  apply controller_probability, embed_probability.
-  exact probabilistic_third_to_two_fifths.
-Qed.
-
-Theorem specification_probability : probabilistic_ptree controller_spec.
-Proof. apply controller_probability, embed_probability, probabilistic_factory_direct_q. Qed.
-End Probability.
 
 Module Observation.
 (** Next-device action law. The frontier retains the FULL reply continuation;
@@ -461,12 +394,12 @@ Qed.
 Section NextAction.
 Variable q : rat.
 Variables (q0 : 0 <= q) (q1 : q <= 1).
-Local Notation coin := (rational_bernoulli_measure q0 q1).
+Local Notation coin := (bernoulli q0 q1).
 Definition native_sampler : tree bool := sample coin.
 
-Lemma embedded_direct_native : embed (factory_direct_q q0 q1) ≈ₚ native_sampler.
+Lemma embedded_direct_native : embed (direct_q q0 q1) ≈ₚ native_sampler.
 Proof.
-  unfold embed, factory_direct_q, native_sampler. rewrite peutt_interp_prob.
+  unfold embed, direct_q, native_sampler. rewrite peutt_interp_prob.
   setoid_rewrite peutt_interp_ret. reflexivity.
 Qed.
 
@@ -529,15 +462,15 @@ Definition mode_query sampler job s fast :=
   ηₘ (observe_stable_head (λ _, false) (@accepts_mode fast) h).
 
 Lemma next_device_query sampler job s fast :
-  next_event_query (MF := FreeOmega EnumQ)
+  next_event_query (MF := FreeOmega SubEnumQ)
     (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)
     (@accepts_mode fast) (next_device sampler job s) (mode_query sampler job s fast).
 Proof. exists (device_front sampler job s). split; [apply next_device_hitting|apply sem_eq_refl]. Qed.
 
-Definition mode_measure fast : EnumQ bool :=
+Definition mode_measure fast : SubEnumQ bool :=
   coin >>=ₘ λ b, ηₘ (Bool.eqb b fast).
 Lemma mode_query_denotes sampler job s fast :
-  free_omega_denotes (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)
+  free_omega_denotes (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
     (λ b : bool, b) (mode_query sampler job s fast) (mode_measure fast).
 Proof.
   exists (mode_measure fast). split; [|apply sem_eq_refl].
@@ -545,28 +478,28 @@ Proof.
   cbn [sem_bind sem_ret free_omega_bind FreeOmegaObservableSemanticMeasure
     observe_stable_head accepts_mode].
   constructor. intro b.
-  exact (@FOOObserveRet EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
+  exact (@FOOObserveRet SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     bool bool (λ x, x) (Bool.eqb b fast)).
 Qed.
 
 Lemma mode_measure_probability fast :
-  enumQ_expect enumQ_bool_indicator (mode_measure fast) = if fast then q else 1-q.
+  enumQ_expect subenumQ_bool_indicator (subenumQ_raw (mode_measure fast)) =
+    if fast then q else 1-q.
 Proof.
-  change (enumQ_expect enumQ_bool_indicator
-    (bind_EnumQ coin (λ b, ret_EnumQ (Bool.eqb b fast))) =
-    if fast then q else 1-q).
+  change (enumQ_expect subenumQ_bool_indicator
+    (bind_EnumQ (rational_bernoulli_measure q0 q1)
+      (λ b, ret_EnumQ (Bool.eqb b fast))) = if fast then q else 1-q).
   rewrite enumQ_expect_bind.
-  transitivity (enumQ_expect (λ b, if Bool.eqb b fast then 1 else 0) coin).
+  transitivity (enumQ_expect (λ b, if Bool.eqb b fast then 1 else 0)
+    (rational_bernoulli_measure q0 q1)).
   { apply finite_expect_ext. intro b. apply enumQ_expect_ret. }
-  change (enumQ_expect (λ b, if Bool.eqb b fast then 1 else 0) coin =
-    if fast then q else 1-q).
   rewrite rational_bernoulli_indicator. by destruct fast; rewrite /= ?addr0 ?add0r.
 Qed.
 
 Theorem next_action_distribution sampler job s fast :
   sampler ≈ₚ native_sampler →
   ∃ query,
-    next_event_query (MF := FreeOmega EnumQ)
+    next_event_query (MF := FreeOmega SubEnumQ)
       (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)
       (@accepts_mode fast) (run_state (controller sampler (Manufacturing job)) s) query ∧
     mode_query sampler job s fast ≈[eq]ₘ query.
@@ -597,11 +530,11 @@ Qed.
     an arbitrary reply; for a singleton query the continuation is not run. *)
 Theorem next_action_probability sampler job s fast :
   sampler ≈ₚ native_sampler →
-  Prₜ[ run_state (controller sampler (Manufacturing job)) s |
+  Prₛ[ run_state (controller sampler (Manufacturing job)) s |
        [@select_mode fast] ] = (if fast then q else 1-q).
 Proof.
   intro H. destruct (next_action_distribution job s fast H) as [query [Hquery Hlift]].
-  eapply enumQ_finite_interaction_probability_intro
+  eapply subenumQ_finite_interaction_probability_intro
     with (query := query) (representative := mode_query sampler job s fast)
       (out := mode_measure fast).
   - apply (proj2 (finite_interaction_query_singleton_iff_next_event_query
@@ -614,7 +547,7 @@ Qed.
 End NextAction.
 
 Theorem factory_next_action_probability job s fast :
-  Prₜ[ run_state (controller implementation_sampler (Manufacturing job)) s |
+  Prₛ[ run_state (controller implementation_sampler (Manufacturing job)) s |
        [@select_mode fast] ] = (if fast then 2/5 else 3/5).
 Proof.
   replace (if fast then 2/5 else 3/5 : rat) with
@@ -626,4 +559,4 @@ Proof.
 Qed.
 End Observation.
 
-Export Controller Scripted Rewriting Facts Probability Observation.
+Export Controller Scripted Rewriting Facts Observation.

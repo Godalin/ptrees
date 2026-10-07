@@ -403,6 +403,14 @@ whole-program rewrite case. Read its actual controller programs, then
 `Rewriting.factory_controller_program_rewrite`: sampler refinement, handler
 and State equations compose inside the infinite device service. The private
 sampling analysis is reused, not re-proved as part of the rewrite chain.
+Its native backend is SubEnumQ throughout: VN draws, binary factory,
+State/device handlers and executable roots. `BoundedVonNeumann.sampler_fair`
+connects the bounded two-draw retry program to the existing scalar VN
+convergence certificate, and `BoundedFactory.fair_factory_direct` supplies
+the second component equation. EnumQ is only a finite-analysis projection;
+there is no runtime conversion of an EnumQ tree. Native probability validity
+is intrinsic, so the old case-local `Probability` module is unnecessary.
+The quantitative endpoint uses the bounded query notation `Prₛ`.
 The short `Facts` corollaries likewise import `FreeOmegaRewriting`: bind,
 iteration, State and Exception congruences come from the library, with no
 controller-specific Proper registrations. The pointwise step equation is

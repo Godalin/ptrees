@@ -48,13 +48,11 @@ let terminal_error = function
   | C.Returned _ -> fail "unexpected program return"
 let rec execute t s = match C.closed_step next t s with
   | C.Continue (u,s') -> execute u s'
-  | C.InvalidMeasure _ -> fail "invalid native measure (mass > 1)"
   | C.Done (C.Returned (C.Inl script),s') -> script,s'
   | C.Done (result,_) -> terminal_error result
 let prompt text = print_string text; flush stdout; read_line ()
 let rec interactive t s = match C.live_step next t s with
   | C.LiveContinue (u,s') -> interactive u s'
-  | C.LiveInvalid _ -> fail "invalid native measure (mass > 1)"
   | C.LiveDone (r,_) -> terminal_error r
   | C.NeedOrder (k,s') ->
       let text = prompt "order number (or quit): " in

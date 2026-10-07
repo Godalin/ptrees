@@ -226,6 +226,12 @@ replay files nor empirical frequencies are proofs.
 The existing executable demonstrations also include State rewriting, a partial
 rational loop and the interactive factory controller. Their roots and main
 equational results are linked in [Case studies](CASE_STUDIES.md).
+The factory controller runs directly over SubEnumQ. Its closed scheduler
+uses the shared `Runner.runner_step`; its live-device adapter retains the
+typed event continuations and calls the same ticket sampler. Neither path
+needs an overweight-measure check: the native carrier already supplies the
+mass bound. This does not turn the host scheduler or PRNG into a verified
+probability implementation.
 Run `python3 -m unittest discover -s tools -p test_execution.py` after building;
 use the rational-ticket, runner-distribution and effect-execution contract
 groups through [Maintained verification](AUDITING.md).

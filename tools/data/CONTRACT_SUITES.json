@@ -624,6 +624,10 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
+    "PTree.Examples.BernoulliFactory.BoundedFactory.BoundedVonNeumann.sampler_fair": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
     "PTree.Semantics.MDPReflection.mdp_trans_bisim_iff_of_fragment": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
