@@ -111,6 +111,8 @@ explicit derived probability constructor, not another global instance route.
 | Rule | Closure allowed before the next progress obligation | Owner |
 | --- | --- | --- |
 | `peutt_coinduction_upto` | Previously established `peutt` | `Eq/PEutt` |
+| `peutt_coinduction_upto_peutt` | Candidate surrounded by known homogeneous `peutt eq` | `Eq/UpToPeutt` |
+| `peutt_coinduction_upto_peutt_known` | The preceding closure or an already proved heterogeneous pair | `Eq/UpToPeutt` |
 | `peutt_coinduction_upto_bind` | Related prefixes and candidate/known continuations | `Eq/PEutt` |
 | `peutt_coinduction_upto_bind_vis` | Bind with one matching visible context | `Eq/UpToBind` |
 | `peutt_coinduction_upto_prob` | Native relational sample and candidate/known continuations | `Eq/UpToProb` |
@@ -122,6 +124,26 @@ without requiring diagonal continuity, totality or commutativity.
 Introduction lemmas such as `bind_upto_closure_bind`,
 `prob_upto_closure_sample` and `vis_upto_closure_vis` expose the certificates
 without asking clients to construct the closures' existential encoding.
+
+The up-to-peutt rule is a **coinduction principle**, not just congruence of
+the final equivalence. With `W_A = peutt eq` on the left carrier and `W_B`
+on the right, its closure is `C(X) = W_A ; X ; W_B`. It proves
+`X ⊆ peuttF(C(X)) → X ⊆ peutt RR`. The return relation `RR` is arbitrary;
+only the surrounding, already established equivalences are homogeneous.
+The proof composes generator-level hitting matches and frontier liftings,
+establishing `C(peuttF(X)) ⊆ peuttF(C(X))`. It needs frontier Core laws but
+no Bind laws, Omega laws, cofinality, hitting-existence or backend-specific
+validation premises; MixedMeasure and SemanticOmega supply operations.
+Its logical dependency is the existing `Eqdep.Eq_rect_eq.eq_rect_eq`, also
+used by heterogeneous head composition, with no added choice assumption.
+
+Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
+The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper
+instances let a client use `setoid_rewrite` before re-entering its candidate;
+they do not assert that an arbitrary candidate itself respects `peutt`.
+Neither rule licenses transitivity of unknown candidate pairs or arbitrary
+composition with another up-to technique. MixedHead's existing proofs are
+unchanged; applying this new rule there is a separate presentation task.
 
 All these rules allow heterogeneous return relations. They do not provide
 unrestricted arbitrary-context closure. **Prob and Tau are not coinductive

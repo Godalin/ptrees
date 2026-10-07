@@ -60,6 +60,44 @@ Qed.
 
 End StableHittingMatch.
 
+(** Compose generator matches, without selecting canonical hitting witnesses
+    or assuming that every state has a complete witness. *)
+Section StableHittingMatchComposition.
+Context {MF : Type → Type}
+  `{FI : SemanticMeasure MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmega MF FI}.
+Context {S1 S2 S3 A1 A2 A3 : Type}.
+Variables (k1 : S1 → MF (stable_target S1 A1))
+  (k2 : S2 → MF (stable_target S2 A2))
+  (k3 : S3 → MF (stable_target S3 A3)).
+Variables (AR12 : (S1 → S2 → Prop) → A1 → A2 → Prop)
+  (AR23 : (S2 → S3 → Prop) → A2 → A3 → Prop)
+  (AR13 : (S1 → S3 → Prop) → A1 → A3 → Prop).
+
+Lemma stable_hitting_match_compose sim12 sim23 sim13
+    (Hheads : ∀ a b c, AR12 sim12 a b → AR23 sim23 b c → AR13 sim13 a c)
+    s1 s2 s3 :
+  stable_hitting_match k1 k2 AR12 sim12 s1 s2 →
+  stable_hitting_match k2 k3 AR23 sim23 s2 s3 →
+  stable_hitting_match k1 k3 AR13 sim13 s1 s3.
+Proof.
+  intros [H12f H12b] [H23f H23b]. split.
+  - intros out1 Hhit1.
+    destruct (H12f out1 Hhit1) as [out2 [Hhit2 Hl12]].
+    destruct (H23f out2 Hhit2) as [out3 [Hhit3 Hl23]].
+    exists out3. split; [exact Hhit3|].
+    eapply sem_lift_mono; [|exact (sem_lift_comp Hl12 Hl23)].
+    intros a c [b [Hab Hbc]]. eapply Hheads; eassumption.
+  - intros out3 Hhit3.
+    destruct (H23b out3 Hhit3) as [out2 [Hhit2 Hl23]].
+    destruct (H12b out2 Hhit2) as [out1 [Hhit1 Hl12]].
+    exists out1. split; [exact Hhit1|].
+    eapply sem_lift_mono; [|exact (sem_lift_comp Hl12 Hl23)].
+    intros a c [b [Hab Hbc]]. eapply Hheads; eassumption.
+Qed.
+End StableHittingMatchComposition.
+
 Section StableHittingMatchEndpoint.
 Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}

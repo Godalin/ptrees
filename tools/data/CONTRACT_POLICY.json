@@ -89,6 +89,7 @@
         "PTree.Eq.PStrong",
         "PTree.Eq.PEutt",
         "PTree.Eq.Canonical",
+        "PTree.Eq.UpToPeutt",
         "PTree.Eq.UpToProb",
         "PStructNotations",
         "PStrongNotations",
@@ -202,6 +203,13 @@
     ],
     "tests/Rewriting/UpToProb.v": [
       "heterogeneous_known_sampling_context"
+    ],
+    "tests/Rewriting/UpToPeutt.v": [
+      "rewrite_both_endpoints",
+      "rewrite_then_known",
+      "pure_closure_empty",
+      "heterogeneous_recursive_reentry",
+      "recursive_or_known"
     ],
     "tests/Capabilities/PTreeUniformity.v": [
       "full_uniformity",
