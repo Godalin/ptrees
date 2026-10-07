@@ -6,7 +6,6 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import FunctionalExtensionality.
-From Coq.Program Require Import Equality.
 Require Import Morphisms Arith.
 
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed.
@@ -45,7 +44,7 @@ Lemma free_omega_observable_dirac_ae_laws {MN}
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Proof.
   constructor. intros A x P. split; intro H.
-  - change (free_omega_ae P (FORet x)) in H. dependent destruction H. assumption.
+  - exact (free_omega_ae_inv H).
   - apply FOAERet. exact H.
 Qed.
 

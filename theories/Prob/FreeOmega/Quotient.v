@@ -6,7 +6,6 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import FunctionalExtensionality.
-From Coq.Program Require Import Equality.
 Require Import Morphisms Arith.
 
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
@@ -198,8 +197,9 @@ Proof.
   - eapply free_omega_support_lift_bind; eauto.
   - eapply free_omega_support_lift_sample; eauto.
   - split.
-    + intros P HP. dependent destruction HP.
-      apply (proj1 IHHq). apply H1. apply (proj1 (H Good)). exact H0.
+    + intros P HP. apply free_omega_ae_inv in HP.
+      destruct HP as [Good [HGood Hk]].
+      apply (proj1 IHHq). apply Hk. apply (proj1 (H Good)). exact HGood.
     + intros Q HQ.
       pose proof ((proj2 IHHq) Q HQ) as Hbranch.
       eapply FOAESample with (Good := λ z, z = x).
@@ -218,10 +218,10 @@ Proof.
   - assumption.
   - assumption.
   - destruct H1 as [Hlr Hrl]. split.
-    + intros P HP. dependent destruction HP. constructor. intro m.
+    + intros P HP. apply free_omega_ae_inv in HP. constructor. intro m.
       destruct (Hrl m) as [n Happrox].
       eapply free_omega_approx_ae_backward; [exact Happrox|]. eauto.
-    + intros Q HQ. dependent destruction HQ. constructor. intro n.
+    + intros Q HQ. apply free_omega_ae_inv in HQ. constructor. intro n.
       destruct (Hlr n) as [m Happrox].
       eapply free_omega_approx_ae_backward; [exact Happrox|]. eauto.
 Qed.

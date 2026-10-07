@@ -55,7 +55,7 @@
     {
       "name": "PTree.Interp.FreeOmega.IterationAlgebra.free_omega_ptree_monad_laws",
       "type": "@IterationAlgebra.free_omega_ptree_monad_laws\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E : Type -> Type),\n       @Monad.MonadLawsE (PTreeDefinition.ptree E MN)\n         (@IterationAlgebra.free_omega_ptree_eq1 MN NI NC NO E) (@PTreeDefinition.Monad_ptree E MN)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Interp.FreeOmega.IterationAlgebra.free_omega_peutt_iter_uniform",
@@ -70,7 +70,7 @@
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.actual_monad_rewriting",
       "type": "@PTreeIterationAlgebra.actual_monad_rewriting\n     : forall (F : Type -> Type) (A B : Type)\n         (t : PTreeDefinition.ptree F Representation.SubEnumQ A)\n         (k : A -> PTreeDefinition.ptree F Representation.SubEnumQ B),\n       @Monad.eq1 (PTreeDefinition.ptree F Representation.SubEnumQ)\n         (@PTreeIterationAlgebra.target_eq1 F) B\n         (@Monad.bind (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ) A B\n            (@Monad.bind (PTreeDefinition.ptree F Representation.SubEnumQ)\n               (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ) A A t\n               (@Monad.ret (PTreeDefinition.ptree F Representation.SubEnumQ)\n                  (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ) A)) k)\n         (@Monad.bind (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ) A B t k)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.actual_uniformity",
@@ -80,7 +80,7 @@
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.weak_fixed_point",
       "type": "@PTreeIterationAlgebra.weak_fixed_point\n     : forall (F : Type -> Type) (I A : Type)\n         (step : I -> PTreeDefinition.ptree F Representation.SubEnumQ (I + A))\n         (i : I),\n       @Canonical.canonical_peutt F Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A)\n         (@PTreeDefinition.PTree.iter F Representation.SubEnumQ A I step i)\n         (@PTreeDefinition.PTree.bind F Representation.SubEnumQ (I + A) A\n            (step i)\n            (fun v : I + A =>\n             match v with\n             | @inl _ _ j => @PTreeDefinition.PTree.iter F Representation.SubEnumQ A I step j\n             | @inr _ _ a =>\n                 {|\n                   PTreeDefinition._observe :=\n                     @PTreeDefinition.RetF F Representation.SubEnumQ A\n                       (PTreeDefinition.ptree F Representation.SubEnumQ A) a\n                 |}\n             end))",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.state_dependent_finite_stuttering",
@@ -90,17 +90,17 @@
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.reader_inherits_monad",
       "type": "@PTreeIterationAlgebra.reader_inherits_monad\n     : forall (F : Type -> Type) (Env : Type),\n       @Monad.MonadLawsE\n         (ReaderMonad.readerT Env (PTreeDefinition.ptree F Representation.SubEnumQ))\n         (@ReaderT.readerT_eq1 Env (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeIterationAlgebra.target_eq1 F))\n         (@ReaderMonad.Monad_readerT Env (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ))",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.exception_inherits_monad",
       "type": "@PTreeIterationAlgebra.exception_inherits_monad\n     : forall (F : Type -> Type) (Err : Type),\n       @Monad.MonadLawsE\n         (EitherMonad.eitherT Err (PTreeDefinition.ptree F Representation.SubEnumQ))\n         (@ExceptT.exceptT_eq1 Err (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeIterationAlgebra.target_eq1 F))\n         (@EitherMonad.Monad_eitherT Err (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ))",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.writer_inherits_monad",
       "type": "@PTreeIterationAlgebra.writer_inherits_monad\n     : forall (F : Type -> Type) (W : Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       @Monad.MonadLawsE\n         (Basics.Monads.writerT W (PTreeDefinition.ptree F Representation.SubEnumQ))\n         (@WriterT.writerT_eq1 W (PTreeDefinition.ptree F Representation.SubEnumQ)\n            (@PTreeIterationAlgebra.target_eq1 F))\n         (@WriterT.writerT_monad W (PTreeDefinition.ptree F Representation.SubEnumQ) op\n            (@PTreeDefinition.Monad_ptree F Representation.SubEnumQ))",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.collapse_unbounded_counter",
@@ -115,7 +115,7 @@
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.real_lawful_monad",
       "type": "PTreeIterationAlgebra.real_lawful_monad\n     : forall (R : reals.Real.type) (F : Type -> Type),\n       @Monad.MonadLawsE (PTreeDefinition.ptree F (Representation.SubEnumR R))\n         (@IterationAlgebra.free_omega_ptree_eq1 (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Coupling.SubEnumR_SemanticMeasureCoreLaws R)\n            (Omega.SubEnumR_SemanticOmega R) F)\n         (@PTreeDefinition.Monad_ptree F (Representation.SubEnumR R))",
-      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
     },
     {
       "name": "PTree.Tests.Capabilities.PTreeIterationAlgebra.high_uniformity",

@@ -148,9 +148,13 @@ approximation constructor views in `StructuralMeasure.v` preserve dependent
 sample packages without identifying equality proofs. AE conjunction,
 countable AE, lifting/approximation composition and AE transport/restriction
 are closed under the global context, with their native laws explicit in the
-signatures. The observable Core and countable-AE instances inherit this
-improvement. Structural bind laws still use functional extensionality;
-other FreeOmega modules and `pstruct`/`pstrong` proofs are not claimed UIP-free.
+signatures. Support transport and quotient-support proofs reuse these views;
+the observable Core, countable-AE, CouplingAE, OmegaAE, Diagonal and Fubini
+instances are now also closed under the global context, with native laws
+explicit in their types. This does not remove assumptions from concrete
+native instances. Structural and observable bind laws still use functional
+extensionality; other FreeOmega modules and `pstruct`/`pstrong` proofs are not
+claimed UIP-free.
 
 Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
 The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper

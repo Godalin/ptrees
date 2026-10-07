@@ -6,7 +6,6 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import FunctionalExtensionality.
-From Coq.Program Require Import Equality.
 Require Import Morphisms Arith.
 
 From PTree.Prob.Interface Require Import Measure AE Coupling.
@@ -58,16 +57,16 @@ Lemma free_omega_approx_ae_backward {MN}
 Proof.
   intros Happrox. induction Happrox; intro HQ.
   - constructor.
-  - dependent destruction HQ. constructor. exists y. split; assumption.
-  - dependent destruction HQ.
+  - apply free_omega_ae_inv in HQ. constructor. exists y. split; assumption.
+  - apply free_omega_ae_inv in HQ. destruct HQ as [Good [HGood Hk]].
     eapply FOAESample with
       (Good := λ x, exists y, S x y ∧ Good y).
     + apply sem_lift_ae_transport_r with
         (R := λ y x, S x y) (mu := nu) (nu := mu).
       * apply sem_lift_sym. exact H.
-      * exact H2.
+      * exact HGood.
     + intros x [y [Hxy Hy]]. eapply H1; eauto.
-  - dependent destruction HQ. constructor. intro n. eapply H0; eauto.
+  - apply free_omega_ae_inv in HQ. constructor. intro n. eapply H0; eauto.
 Qed.
 
 Lemma free_omega_support_lift_mono {MN}
@@ -174,13 +173,15 @@ Lemma free_omega_support_lift_sample {MN}
   free_omega_support_lift R (FOSample mu k) (FOSample nu h).
 Proof.
   intros HT Hkh. split.
-  - intros P HP. dependent destruction HP.
+  - intros P HP. apply free_omega_ae_inv in HP.
+    destruct HP as [Good [HGood Hk]].
     eapply FOAESample with
       (Good := λ y, exists x, T x y ∧ Good x).
     + eapply sem_lift_ae_transport_r; eassumption.
     + intros y [x [Hxy Hx]].
       apply (proj1 (Hkh x y Hxy) P). eauto.
-  - intros Q HQ. dependent destruction HQ.
+  - intros Q HQ. apply free_omega_ae_inv in HQ.
+    destruct HQ as [Good [HGood Hk]].
     eapply FOAESample with
       (Good := λ x, exists y, T x y ∧ Good y).
     + eapply sem_lift_ae_transport_r with
@@ -198,7 +199,8 @@ Lemma free_omega_ae_sample_inv {MN}
   free_omega_ae P (FOSample mu k) →
   sem_ae mu (λ x, free_omega_ae P (k x)).
 Proof.
-  intro HP. dependent destruction HP.
+  intro HP. apply free_omega_ae_inv in HP.
+  destruct HP as [Good [HGood Hk]].
   eapply sem_ae_mono; [|eassumption]. intros x Hx. eauto.
 Qed.
 
@@ -223,8 +225,8 @@ Proof.
     + apply sem_ae_conj; assumption.
     + intros x [HxGood HxP].
       pose proof ((proj1 (Hout x HxGood)) P HxP) as Hlub.
-      dependent destruction Hlub. eauto.
-  - intros Q HQ. dependent destruction HQ.
+      apply free_omega_ae_inv in Hlub. eauto.
+  - intros Q HQ. apply free_omega_ae_inv in HQ.
     eapply FOAESample with
       (Good := λ x, Good x ∧
         ∀ n, free_omega_ae Q (chain x n)).
@@ -242,7 +244,7 @@ Lemma free_omega_support_lift_lub {MN}
   (∀ n, free_omega_support_lift R (c n) (d n)) →
   free_omega_support_lift R (FOLub c) (FOLub d).
 Proof.
-  intro Hcd. split; intros P HP; dependent destruction HP; constructor;
+  intro Hcd. split; intros P HP; apply free_omega_ae_inv in HP; constructor;
     intro n; [apply (proj1 (Hcd n))|apply (proj2 (Hcd n))]; auto.
 Qed.
 
@@ -256,19 +258,13 @@ Lemma free_omega_support_lift_lub_zero_prefix_l {MN}
       | Datatypes.S n' => c n' end)) (FOLub d).
 Proof.
   intro Hcd. split.
-  - intros P HP. dependent destruction HP. constructor. intro n.
+  - intros P HP. apply free_omega_ae_inv in HP. constructor. intro n.
     apply (proj1 (Hcd n) P).
-    match goal with
-    | Hchain : ∀ i : nat, _ |- _ =>
-        exact (Hchain (S n))
-    end.
-  - intros P HP. dependent destruction HP. constructor. intros [|n].
+    exact (HP (S n)).
+  - intros P HP. apply free_omega_ae_inv in HP. constructor. intros [|n].
     + constructor.
     + apply (proj2 (Hcd n) P).
-      match goal with
-      | Hchain : ∀ i : nat, _ |- _ =>
-          exact (Hchain n)
-      end.
+      exact (HP n).
 Qed.
 
 Lemma free_omega_support_lift_sample_zero {MN}
@@ -293,10 +289,7 @@ Lemma free_omega_support_lift_lub_constant_r {MN}
 Proof.
   intros [Hright Hleft]. split.
   - intros P HP. constructor. intro n. exact (Hright P HP).
-  - intros Q HQ. dependent destruction HQ. apply Hleft.
-    match goal with
-    | Hchain : ∀ i : nat, _ |- _ => exact (Hchain 0)
-    end.
+  - intros Q HQ. apply free_omega_ae_inv in HQ. apply Hleft. exact (HQ 0).
 Qed.
 
 Lemma free_omega_support_lift_bind_diagonal {MN}
@@ -324,11 +317,11 @@ Proof.
     pose proof ((proj1 Hsource) _ HP) as HsourceP.
     eapply free_omega_ae_mono in HsourceP.
     2: { intros x [y [-> Hy]]. exact Hy. }
-    dependent destruction HsourceP. constructor. intro n.
+    apply free_omega_ae_inv in HsourceP. constructor. intro n.
     eapply free_omega_ae_bind; [eauto|]. intros x Hx.
     pose proof ((proj1 (Hkernels x)) P Hx) as HkernelP.
-    dependent destruction HkernelP. eauto.
-  - intros Q HQ. dependent destruction HQ.
+    apply free_omega_ae_inv in HkernelP. eauto.
+  - intros Q HQ. apply free_omega_ae_inv in HQ.
     apply free_omega_ae_bind with
       (P := λ x, ∀ j, free_omega_ae Q (kernels x j)).
     + eapply free_omega_ae_mono.
@@ -370,14 +363,11 @@ Lemma free_omega_support_lift_double_diagonal {MN}
     (FOLub (λ fuel, grid fuel fuel)).
 Proof.
   intros Hrows Hcols. split.
-  - intros P HP. dependent destruction HP. constructor. intro fuel.
-    match goal with
-    | Houter : ∀ i : nat, _ |- _ =>
-      specialize (Houter fuel); dependent destruction Houter
-    end.
+  - intros P HP. apply free_omega_ae_inv in HP. constructor. intro fuel.
+    specialize (HP fuel). apply free_omega_ae_inv in HP.
     eapply free_omega_ae_mono; [|eauto].
     intros x Hx. exists x. split; [reflexivity|exact Hx].
-  - intros P HP. dependent destruction HP. constructor. intro outer.
+  - intros P HP. apply free_omega_ae_inv in HP. constructor. intro outer.
     constructor. intro inner. pose (fuel := outer + inner).
     assert (Hfuel : free_omega_ae P (grid fuel fuel)) by eauto.
     pose proof (free_omega_approx_steps (Hrows outer) inner outer) as Hrow.
@@ -406,30 +396,25 @@ Lemma free_omega_support_lift_sample_bind {MN}
     (FOSample (sem_bind mu h) l).
 Proof.
   intros Hbind Hkl. split.
-  - intros P HP. dependent destruction HP.
-    match goal with
-    | Houter : sem_ae mu ?Good,
-      Hinner : ∀ x, ?Good x -> _ |- _ =>
-      eapply FOAESample with
-        (Good := λ y, exists x, Good x ∧
-          free_omega_ae P (k y));
-      [apply (proj2 (Hbind _));
-       eapply sem_ae_mono; [|exact Houter];
-       intros x Hx; specialize (Hinner x Hx);
-       dependent destruction Hinner;
-       eapply sem_ae_mono; [|eassumption];
-       intros y Hy; exists x; split; [exact Hx|eauto]
-      |intros y [x [Hx Hky]];
-       exact ((proj1 (Hkl y)) P Hky)]
-    end.
-  - intros Q HQ. dependent destruction HQ.
-    apply (proj1 (Hbind _)) in H.
+  - intros P HP. apply free_omega_ae_inv in HP.
+    destruct HP as [Good [Houter Hinner]].
+    eapply FOAESample with
+      (Good := λ y, exists x, Good x ∧ free_omega_ae P (k y)).
+    + apply (proj2 (Hbind _)).
+      eapply sem_ae_mono; [|exact Houter]. intros x Hx.
+      specialize (Hinner x Hx). apply free_omega_ae_sample_inv in Hinner.
+      eapply sem_ae_mono; [|exact Hinner]. intros y Hy.
+      exists x. split; assumption.
+    + intros y [x [Hx Hky]]. exact ((proj1 (Hkl y)) P Hky).
+  - intros Q HQ. apply free_omega_ae_inv in HQ.
+    destruct HQ as [Good [Houter Hinner]].
+    apply (proj1 (Hbind _)) in Houter.
     eapply FOAESample with
       (Good := λ x, sem_ae (h x) Good).
-    + exact H.
+    + exact Houter.
     + intros x Hx. eapply FOAESample with (Good := Good).
       * exact Hx.
-      * intros y Hy. apply (proj2 (Hkl y) Q). apply H0. exact Hy.
+      * intros y Hy. apply (proj2 (Hkl y) Q). apply Hinner. exact Hy.
 Qed.
 
 Definition semantic_product {MN}
@@ -449,13 +434,13 @@ Lemma free_omega_ae_sample2_product_iff {MN}
     (λ p, free_omega_ae P (k (fst p) (snd p))).
 Proof.
   split.
-  - intro Hnested. dependent destruction Hnested.
+  - intro Hnested. apply free_omega_ae_sample_inv in Hnested.
     apply (proj2 (sem_ae_bind_iff _ _ _)).
-    eapply sem_ae_mono; [|exact H]. intros x Hx.
-    specialize (H0 x Hx). dependent destruction H0.
+    eapply sem_ae_mono; [|exact Hnested]. intros x Hx.
+    apply free_omega_ae_sample_inv in Hx.
     apply (proj2 (sem_ae_bind_iff _ _ _)).
-    eapply sem_ae_mono; [|exact H0]. intros y Hy.
-    apply (proj2 (sem_ae_ret_iff _ _)). exact (H1 y Hy).
+    eapply sem_ae_mono; [|exact Hx]. intros y Hy.
+    apply (proj2 (sem_ae_ret_iff _ _)). exact Hy.
   - intro Hproduct.
     apply (proj1 (sem_ae_bind_iff _ _ _)) in Hproduct.
     eapply FOAESample with
