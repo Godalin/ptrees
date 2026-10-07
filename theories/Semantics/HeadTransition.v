@@ -182,11 +182,11 @@ Theorem head_bisim_step_match h1 h2 label out1 :
   ∃ out2, head_step h2 label out2 ∧ sem_lift head_bisim out1 out2.
 Proof.
   intros Hrel Hstep. apply head_bisim_unfold in Hrel.
-  dependent destruction Hrel.
-  - exfalso. eapply head_step_ret. exact Hstep.
-  - dependent destruction Hstep.
-    destruct (proj1 (H x) _ H0) as [out2 [Hhit Hlift]].
-    exists out2. split; [constructor; exact Hhit|exact Hlift].
+  destruct Hstep as [X e k x out1 Hhit].
+  apply stable_head_rel_view_intro in Hrel.
+  destruct Hrel as [l [-> Hnext]].
+  destruct (proj1 (Hnext x) _ Hhit) as [out2 [Hhit2 Hlift]].
+  exists out2. split; [constructor; exact Hhit2|exact Hlift].
 Qed.
 
 (** At chosen complete hitting witnesses the generator is exactly the
@@ -254,8 +254,8 @@ Proof.
   intros h1 h2 H12.
   eapply head_bisim_coinduction with (sim := λ a b, hb b a); [|exact H12].
   intros a b Hab. apply head_bisim_unfold in Hab.
-  dependent destruction Hab; constructor.
-  - reflexivity.
+  destruct Hab; constructor.
+  - symmetry. assumption.
   - intro x. destruct (H x) as [Hf Hb]. split.
     + intros out2 H2. destruct (Hb out2 H2) as [out1 [H1 Hl]].
       exists out1. split; [exact H1|]. apply sem_lift_sym. exact Hl.
@@ -269,9 +269,10 @@ Proof.
   eapply head_bisim_coinduction with
     (sim := λ a c, exists b, hb a b ∧ hb b c); [|eauto].
   intros a c [b [Hab Hbc]]. apply head_bisim_unfold in Hab, Hbc.
-  dependent destruction Hab; dependent destruction Hbc; constructor.
-  - congruence.
-  - intro x. destruct (H x) as [H12f H12b]. destruct (H0 x) as [H23f H23b].
+  eapply stable_head_rel_compose; [| |exact Hab|exact Hbc].
+  - intros r1 r2 r3 -> ->. reflexivity.
+  - intros t1 t2 t3 Hnext12 Hnext23.
+    destruct Hnext12 as [H12f H12b]. destruct Hnext23 as [H23f H23b].
     split.
     + intros out1 H1. destruct (H12f out1 H1) as [out2 [H2 Hl12]].
       destruct (H23f out2 H2) as [out3 [H3 Hl23]].

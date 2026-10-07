@@ -164,8 +164,17 @@ fixed-carrier inversion lemmas `pstrong_vis_inv` and `pstrong_prob_inv`
 still depend on `Eqdep.Eq_rect_eq.eq_rect_eq`: unlike the one-sided packaged
 views, they recover continuations at a specified hidden type. Both remaining
 dependencies are explicitly recorded in the contracts; no necessity or
-impossibility theorem for eliminating them is claimed. Other structural
-consumers are not automatically claimed UIP-free.
+impossibility theorem for eliminating them is claimed.
+
+Structural interpreter preservation and handler replacement now also use
+ordinary constructor elimination: all five `Interp/Structural.v` theorem
+endpoints are closed under the global context. Head bisimulation symmetry,
+transitivity, equivalence and step matching reuse the packaged stable-head
+view/composition lemmas and are likewise closed, with their semantic profile
+explicit. The fixed-event inversions `head_step_vis_iff`,
+`head_step_vis_label` and `head_bisim_vis_iff` still use UIP; their uniqueness
+and chosen/existential-hitting corollaries inherit it. This cleanup does not
+change their statements or claim that every transition consumer is UIP-free.
 
 Pure `C` does not close an unrelated known pair: `C(empty) = empty`.
 The `_known` variant uses `C(X) ∪ peutt RR` for that purpose. Closure Proper

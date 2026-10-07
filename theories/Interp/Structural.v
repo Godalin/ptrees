@@ -54,14 +54,13 @@ Proof.
         (observe (PTree.interp_tree handler t3))).
       rewrite !observe_interp.
       pose proof (pstruct_unfold H) as Hstep.
-      dependent destruction Hstep.
-      + rewrite <- x0. rewrite <- x. cbn. constructor. exact H0.
-      + rewrite <- x0. rewrite <- x. cbn.
-        constructor. apply CIH. constructor. exact H0.
-      + rewrite <- x0. rewrite <- x. cbn.
-        constructor. apply CIH. constructor. intro y. exact (H0 y).
-      + rewrite <- x0. rewrite <- x. cbn.
-        constructor=> y. apply CIH. constructor. exact (H0 y).
+      remember (observe t0) as o1 in Hstep |- *.
+      remember (observe t3) as o2 in Hstep |- *.
+      destruct Hstep; cbn.
+      + constructor. exact H0.
+      + constructor. apply CIH. constructor. exact H0.
+      + constructor. apply CIH. constructor. intro y. exact (H0 y).
+      + constructor=> y. apply CIH. constructor. exact (H0 y).
     - unfold pstruct_body.
       change (pstructF RR (` CH)
         (observe (PTree.bind source
@@ -73,14 +72,13 @@ Proof.
       destruct os as [x|source'|Y e c|Y mu c]; cbn.
       + rewrite !observe_interp.
         pose proof (pstruct_unfold (H x)) as Hstep.
-        dependent destruction Hstep.
-        * rewrite <- x1. rewrite <- x. cbn. constructor. exact H0.
-        * rewrite <- x1. rewrite <- x. cbn.
-          constructor. apply CIH. constructor. exact H0.
-        * rewrite <- x1. rewrite <- x. cbn.
-          constructor. apply CIH. constructor. intro z. exact (H0 z).
-        * rewrite <- x1. rewrite <- x. cbn.
-          constructor=> z. apply CIH. constructor. exact (H0 z).
+        remember (observe (k1 x)) as o1 in Hstep |- *.
+        remember (observe (k2 x)) as o2 in Hstep |- *.
+        destruct Hstep; cbn.
+        * constructor. exact H0.
+        * constructor. apply CIH. constructor. exact H0.
+        * constructor. apply CIH. constructor. intro z. exact (H0 z).
+        * constructor=> z. apply CIH. constructor. exact (H0 z).
       + constructor. apply CIH. constructor. exact H.
       + constructor=> y. apply CIH. constructor. exact H.
       + constructor=> y. apply CIH. constructor. exact H.
@@ -463,18 +461,20 @@ Proof.
           (λ x, PTree.interp_tree handler2 (k x))))).
       rewrite !observe_bind.
       pose proof (pstruct_unfold H) as Hstep.
-      dependent destruction Hstep.
-      + rewrite <- x0, <- x. cbn. rewrite !observe_interp.
+      remember (observe source1) as o1 in Hstep |- *.
+      remember (observe source2) as o2 in Hstep |- *.
+      destruct Hstep; cbn.
+      + subst r1. rewrite !observe_interp.
         remember (observe (k r2)) as ok eqn:Hok.
         destruct ok as [r|k'|Y e d|Y mu d]; cbn.
         * constructor. reflexivity.
         * constructor. apply CIH. constructor.
         * constructor. apply CIH. constructor. apply handlers_related.
         * constructor=> y. apply CIH. constructor.
-      + rewrite <- x0, <- x. cbn. constructor. apply CIH. constructor. exact H0.
-      + rewrite <- x0, <- x. cbn. constructor=> y.
+      + constructor. apply CIH. constructor. exact H0.
+      + constructor=> y.
         apply CIH. constructor. exact (H0 y).
-      + rewrite <- x0, <- x. cbn. constructor=> y.
+      + constructor=> y.
         apply CIH. constructor. exact (H0 y).
     - unfold pstruct_body.
       pose proof (pstruct_unfold H) as Hstep.

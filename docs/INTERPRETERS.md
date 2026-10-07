@@ -299,6 +299,13 @@ functional extensionality but no UIP. These assumptions remain recorded in
 the compiled contracts; the user-facing rewrite chain does not introduce
 an extensionality proof.
 
+The structural handler-replacement theorem `pstruct_interp_handler` is now
+also closed under the global context, as are the other four theorem endpoints
+in `Interp/Structural.v`. This removes the dependency introduced by its
+dependent constructor elimination without changing the handler premises or
+adding a new capability. These generic results do not automatically remove
+the assumptions of concrete backend instances.
+
 ## Remaining boundaries
 
 The public algebra and rewrite surface is complete for the operations above.

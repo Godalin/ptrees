@@ -1656,7 +1656,7 @@
     {
       "name": "PTree.Interp.FreeOmega.Base.peutt_interp_handler",
       "type": "@Base.peutt_interp_handler\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (R : Type) (handler1 handler2 : forall X : Type, E X -> PTreeDefinition.ptree F MN X),\n       (forall (X : Type) (e : E X),\n        @PStruct.pstruct F MN X X (@eq X) (handler1 X e) (handler2 X e)) ->\n       forall t : PTreeDefinition.ptree E MN R,\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)\n         (@PTreeDefinition.PTree.interp_tree E F MN handler1 R t)\n         (@PTreeDefinition.PTree.interp_tree E F MN handler2 R t)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.FreeOmega.Base.peutt_interp_iter",
@@ -1816,7 +1816,7 @@
     {
       "name": "PTree.Interp.Structural.pstruct_interp_handler",
       "type": "@Structural.pstruct_interp_handler\n     : forall (E F M : Type -> Type) (R : Type)\n         (handler1 handler2 : forall X : Type, E X -> PTreeDefinition.ptree F M X),\n       (forall (X : Type) (e : E X), @PStruct.pstruct F M X X (@eq X) (handler1 X e) (handler2 X e)) ->\n       forall t : PTreeDefinition.ptree E M R,\n       @PStruct.pstruct F M R R (@eq R) (@PTreeDefinition.PTree.interp_tree E F M handler1 R t)\n         (@PTreeDefinition.PTree.interp_tree E F M handler2 R t)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Interp.Structural.pstruct_interp_iter",
@@ -2776,7 +2776,7 @@
     {
       "name": "PTree.Semantics.HeadTransition.head_bisim_equivalence",
       "type": "@HeadTransition.head_bisim_equivalence\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Equivalence (UnifiedFrontier.stable_head E MN R)\n         (@HeadTransition.head_bisim E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Semantics.HeadTransition.head_bisim_refl",
@@ -2786,17 +2786,17 @@
     {
       "name": "PTree.Semantics.HeadTransition.head_bisim_step_match",
       "type": "@HeadTransition.head_bisim_step_match\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R1 R2 : Type) (RR : R1 -> R2 -> Prop)\n         (h1 : UnifiedFrontier.stable_head E MN R1) (h2 : UnifiedFrontier.stable_head E MN R2)\n         (label : HeadTransition.obs_label E) (out1 : MF (UnifiedFrontier.stable_head E MN R1)),\n       @HeadTransition.head_bisim E MN MF FI FC MX FO R1 R2 RR h1 h2 ->\n       @HeadTransition.head_step E MN MF FI MX FO R1 h1 label out1 ->\n       exists out2 : MF (UnifiedFrontier.stable_head E MN R2),\n         @HeadTransition.head_step E MN MF FI MX FO R2 h2 label out2 /\\\n         @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R1)\n           (UnifiedFrontier.stable_head E MN R2)\n           (@HeadTransition.head_bisim E MN MF FI FC MX FO R1 R2 RR) out1 out2",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Semantics.HeadTransition.head_bisim_sym",
       "type": "@HeadTransition.head_bisim_sym\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Symmetric (UnifiedFrontier.stable_head E MN R)\n         (@HeadTransition.head_bisim E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Semantics.HeadTransition.head_bisim_trans",
       "type": "@HeadTransition.head_bisim_trans\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Transitive (UnifiedFrontier.stable_head E MN R)\n         (@HeadTransition.head_bisim E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Semantics.HeadTransition.head_bisim_vis_exists_iff",
