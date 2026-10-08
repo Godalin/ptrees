@@ -1,6 +1,6 @@
 (** * MixedHead: different samplers, related recursive protocols
 
-    Case role: paper case study. Native/frontier: SubEnumQ / observable
+    Case role: appendix coupling case study. Native/frontier: SubEnumQ / observable
     FreeOmega. The implementation uses several Boolean draws; the
     specification samples one complete outcome. One 3-to-2 joint relates
     BOTH heterogeneous return payloads and recursive visible continuations.

@@ -1,4 +1,4 @@
-(** Case role: paper case study.
+(** Case role: supporting interactive protocol example.
     Reading entry: interactive_von_neumann_service_equivalent; von_neumann_request_true_reply_trace_probability.
     Scope: EnumQ / observable FreeOmega; internal structural analysis is explicitly scoped.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)

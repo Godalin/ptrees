@@ -1,4 +1,4 @@
-(** Case role: paper case study / shared algebra.
+(** Case role: supporting composition example / shared algebra.
     Reading entry: peutt_factory_vn_direct.
     Scope: EnumQ / observable FreeOmega; two unbounded analyses are consumed as behavior equations.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)

@@ -1,4 +1,4 @@
-(** Case role: paper case study.
+(** Case role: supporting algebra and execution case study.
     Reading entry: Rewriting.factory_controller_program_rewrite.
     Scope: SubEnumQ / observable FreeOmega; native bounds are intrinsic.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)

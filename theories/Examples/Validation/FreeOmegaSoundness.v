@@ -1,7 +1,7 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Equality, countable support and arbitrary-carrier joint soundness contracts.
     The first block deliberately tests the independent external layer before
-    importing FreeOmega. Shared samples live in Regression/Fixtures. *)
+    importing FreeOmega. Shared samples live in [Validation/FreeOmegaSamples]. *)
 From Coq Require Import Utf8.
 
 Set Warnings "-notation-overridden,-ambiguous-paths".

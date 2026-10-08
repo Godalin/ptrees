@@ -6,6 +6,10 @@ Adaptive and pGCL/RandomWalk. FactoryController supports execution and algebra;
 MixedHead supports the appendix's coupling/coinduction discussion.
 The [case-study standard](CASE_STUDY_STANDARD.md) governs presentation, not
 which proof method a case is allowed to use.
+It applies to every example, including supporting clients, execution demos
+and counterexamples; see the [family-wide review](CASE_STUDY_STANDARD.md#7-全目录覆盖与保留边界)
+for the distinction between local program rewriting and retained mathematical
+or operational evidence.
 
 ## Choose a starting point
 

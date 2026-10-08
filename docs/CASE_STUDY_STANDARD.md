@@ -9,6 +9,11 @@
 目标是让读者从一个主要文件看清：程序做什么、规格是什么、如何用
 PTree 代数把程序变成规格，以及结论依赖哪些真正的概率分析。
 
+本标准适用于整个 `theories/Examples/`，不以是否进入论文筛选。
+统一的是接口使用、证明可读性和假设边界，不是文件模板或证明方法。
+支持性例子也应优先在完整程序的局部子项上重写；数学分析、耦合证书、
+共归纳不变量和可执行计算仍使用适合其结论的方法。
+
 **评价单位是可解释的程序变换，不是行数或 rewrite tactic 的数量。**
 主证明不能退化成调用一个已经证明了整个结论的包装引理；辅助引理也
 不能把同样的底层展开和同余操作层层藏起来。
@@ -102,9 +107,9 @@ EnumQ 的内部表示”。具体 backend 的身份在文件开头可查，但�
 
 原则上一个 case 一个主要 `.v` 文件，以 Section 或必要的 Module 分区：
 
-完整模板适用于 **paper case study**。其余文件明确标为 supporting
-example、shared analysis、execution demo 或 regression-like example，
-只承担相应职责并说明不采用完整模板的原因。
+下面的完整阅读结构适用于较大的程序案例，不限于论文选例。短的 API
+客户端、shared analysis、execution demo 和反例说明实际职责与结论即可；
+不为一条现成定理的实例化补造六个分区，也不强制填写证明方法分类。
 
 1. **Setup**：接口、profile、记号、自然的参数条件。
 2. **Programs**：源程序、规格程序、handlers、必要的命名中间程序。
@@ -215,27 +220,33 @@ generic owner，再由 case 消费。若能力确实不足，记录缺口和限�
 每个论文候选 case 至少标出：主定理、核心 rewrite 链、外部分析端点、
 backend 与假设、明确未声称的性质、可选的运行入口。
 
-## 7. 当前覆盖范围与候选顺序
+## 7. 全目录覆盖与保留边界
 
-以下来自当前 `theories/Examples` 文件盘点，不是逐证明完成度验收。
-所有现有 Examples 都要说明文件职责，并给出
-“按标准改写 / 已符合 / 分析例外”的明确结论；并非都升级为论文主案例。
-Regression 不自动纳入论文 case 迁移，也不删其负向测试。
+全目录盘点覆盖以下家族；优先检查手工同余、复制的 Proper 注册、
+一次性程序计算包装和重复概率证明。表中记录本轮具体处理与保留理由，
+不是声称逐行重新审计了所有分析证明，也不表示每个文件都必须修改。
+技术编译检查仍属于独立的 `tests/`，不并入理论或程序案例。
 
-| 批次 / case family | 当前文件 | 审查重点 |
-| --- | --- | --- |
-| 试点 | `FactoryController.v` | 完整 context 下可读的 rewrite 主线，而非只缩减局部断言 |
-| 短篇解释案例 | `ITreeSampling.v`, `EffectInteractions.v` | elaboration / handler 代数，避免手工构造证明替代已有定律 |
-| State / execution | `StateCounter.v`, `RationalState.v`, `StateRewrite.v` | 程序重写与执行验证分责；评估合并为一 case 的收益及 extraction 客户端 |
-| 组件与工厂 | `BernoulliFactory/BernoulliFactory.v`, `BernoulliFactoryComposition.v`, `BernoulliFactoryProbability.v` | 主要 composition 展示收敛，避免重复通用 bind/Prob 证明 |
-| 工厂共享分析 | 同目录 `VonNeumannUnbounded.v`, `RationalBernoulli.v`, `OperationalVonNeumann.v`, `OperationalRationalBernoulli.v`, `OperationalBernoulliFactory.v` | 保留必要概率分析；整理其面向 rewrite 的端点，不强求把极限证明改成重写 |
-| 实权采样变体 | 同目录 `RealBernoulliOracle.v`, `RealBernoulliMathComp.v` | 接口条件、与有理模型的关系、数学与 backend 实现边界 |
-| 无限协议 | `InteractiveVonNeumann/InteractiveVonNeumannService.v`, `MixedHead/Protocol.v` | 尽可能复用组件等式；真正需要的 coinduction/coupling 单独标明 |
-| 随机游走 | `PGCL/RandomWalk.v` | pGCL source/denote 主线；`RandomWalkAnalysis.v` 保留 passage/harmonic 分析 |
-| MathComp 程序 | `MathCompPrograms.v` | 明确这是程序定义/方程还是完整 case；链接已有安全/直接验证端点，不凭空补 claim |
+| Case family | 处理与阅读边界 |
+| --- | --- |
+| 顶层程序案例 | Adaptive、FactoryController、IterationBasics、AbsorbingFrontier 和 StateRewrite 保留既有完整程序链。`EffectInteractions.lower_then_count` 就地完成 sample/Get/Put/Ret 的重写，删除一次性 `lower_count_tail`。ITreeSampling 已直接使用 elaboration 方程；RealSamplingHandler 在 bind 内替换已证明的服务。 |
+| State / 执行支撑 | StateCounter 的 `pstruct` 方程保留精确 Tau 结构，不能换成更弱的 `peutt`；RationalState 与 `Execution/` 的精确 fuel/entropy 计算保留 `native_compute`。行为等价不意味着相同资源轨迹。 |
+| `BernoulliFactory/` | Composition 用注册的 factory context 重写 sampler。`factory_fair_step_standard` 是有限分布分析桥，`peutt_factory_fair_standard` 有多个消费者，保留。BoundedFactory 的 raw projection / rows / support 与 Operational 系列的有限 fuel、收敛证明属于分析，不展开复制到上层。 |
+| `InteractiveVonNeumann/` | 有限 round 和 after-request 直接重写 sampler/continuation；无限服务仍展示 up-to-bind candidate 和 postfixed 义务。定量 trace 与完整 hitting witnesses 不因行为端点可复用而删除。 |
+| `MixedHead/` | Protocol 与 UpTo 保持独立主证明，共享 `draw_distribution_mixed`、`mixed_samples_lift` 和 3-to-2 joint。各自构造当前 continuation 的 frontier 不是重复概率计算；不让一份主定理调用另一份。 |
+| `Effects/` | StatePreservation / UnrestrictedInterp 改用库的 opt-in rewriting，删除复制的 local Proper；Tau 的 bind/fmap/Prob 示例直接重写。保留 heterogeneous、fold、iteration、guardedness 等真实条件的短实例。EventfulIteration 的显式 Ret witnesses 保持原公理边界，不换成需要额外 choice 的通用 Dirac 消去。 |
+| `Probability/` | SubEnumRBehavior 在无限服务的 bind 内消费 crossed-sample 等式。ConditionalResampling、CorrelatedSampleAlgebra 的条件分布、joint、residual support 是数学证据，仍显式展示；finite/backend 数值验证不伪装成程序代数。 |
+| `Internal/` | ResidualFinite 的外围 Tau 计算改为重写；内部 cuts、scheduling、recovery、joint witnesses 保留。它们展示辅助证明设施，不作为另一套公开程序等价。 |
+| `Transitions/` | 保留 MDP encoding / fragment / trans-bisim 的短 API 客户端和边界例子；不重证 correspondence，也不把 transition equality 与 `peutt` 混为一谈。 |
+| `Validation/` | 外部 modelability、joint existence、mass、soundness 验证保持独立职责；它们不是主程序推理链的前提。不将数学验证强制改成程序重写。 |
+| `Counterexamples/` | 保留 invalid raw terms、limit safety、native reflection、transition strictness 等反例的具体证据；不以程序等式替代否定结论。 |
+| `PGCL/` | Syntax / Forward / Algebra / Interpretation 是语言及公开定理库；Programs、RandomWalk 是客户端；RandomWalkAnalysis 是分析 owner，Runtime 是模拟器支撑。保留这些边界，不把整个语言发展套成单一 case。 |
+| MathComp 相关案例 | MathCompPrograms 仅提供 safe syntax；native 数学和既有 Gate M 客户端仍分开，不为展示完整案例引入新的 unchecked assembly。 |
 
-具体合并路径、主定理名、需要补充的 generic lemma，逐批读取证明后确定。
-不得将本表理解成已经授权删除任何文件或冻结上述分组为新目录结构。
+残留的 `apply`、`change`、局部等式或分析引理本身不是缺陷。判断其是否
+应替换，要看它是在手工穿过普通 context，还是承担真实的语义/类型边界。
+例如 `fmap` 的例子可以展开为 bind 后重写；不必为一次推断困难新增实例。
+其他短实例已经直接消费公共定理时，不为“看起来像主案例”重写证明主体。
 
 ## 8. 逐 case 验收与推进纪律
 
