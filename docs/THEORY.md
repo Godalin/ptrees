@@ -27,6 +27,26 @@ return termination: Vis is also a stable head. A finite certificate `t ⊢F fron
 belongs to a different layer. Exact hitting records actual visible continuations;
 behavioral replacement of them is a relational theorem, not tree equality.
 
+Read the stable-behavior construction in this order (names relative to
+`PTree.Eq`):
+
+1. [`UnifiedFrontier.stable_head`, `stable_head_rel`](../theories/Eq/UnifiedFrontier.v)
+   expose Ret values and whole Vis continuations as the observations to relate.
+2. [`PTreeKernel.ptree_hitting_increasing`, `ptree_stable_hitting_exists`,
+   `ptree_stable_hitting_unique`](../theories/Eq/PTreeKernel.v) construct and
+   identify the complete frontier using the stated order/omega laws.
+3. [`StableHittingRelation.stable_hitting_match`](../theories/Eq/StableHittingRelation.v)
+   matches complete witnesses in both directions. [`PEutt.peutt`,
+   `peutt_coinduction`](../theories/Eq/PEutt.v) use that matching as their
+   generator; progress is at stable observations, not at a single internal
+   sampling node.
+4. [Relational-limit laws](#structural-bridges-and-relational-limits) connect
+   approximation-level relations to complete frontiers. They are additional
+   probability obligations, not consequences of the datatype alone.
+
+The bind, up-to and interpretation interfaces below consume this structure;
+their clients need not reopen its scheduling or dependent-view proofs.
+
 ## Bind and rewriting
 
 [`Eq/Bind`](../theories/Eq/Bind.v) owns heterogeneous bind congruence:

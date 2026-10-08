@@ -2,10 +2,14 @@
 
 ## Introduction
 
-For an end-to-end example, see the [Interactive Bernoulli Factory
-Controller](docs/CASE_STUDIES.md#factory-controllers): a nested unbounded sampler, an infinite
-response-dependent device service, algebraic refinement, State interpretation,
-exact next-event probabilities, and execution of the same extracted program.
+The two principal case studies are
+[AdaptiveFactoryController](theories/Examples/AdaptiveFactoryController.v),
+which replaces an adaptive sampler inside a persistent stateful service, and
+[pGCL RandomWalk](theories/Examples/PGCL/RandomWalk.v), which connects a source
+program to forward least-fixed-point semantics and an infinite-support output
+law. Start with the [paper theorem index](docs/CASE_STUDIES.md#paper-theorem-index).
+FactoryController supplies a separate supporting execution example; Adaptive's
+behavioral refinement is not an extraction or host-randomness guarantee.
 
 PTree is an intensional representation of computations in which native
 probability, potentially infinite internal computation, and observable event
@@ -390,13 +394,14 @@ both completion and direct-frontier clients; see the
 [consumer extraction and local rewriting profiles](docs/THEORY.md#bind-and-rewriting).
 See [generic bind extraction](docs/THEORY.md#bind-and-rewriting) and
 [public module migration](docs/ARCHITECTURE.md#program-facing-versus-expert-imports).
-Experts may import owners directly. Paper-facing programs
-form four groups:
+Experts may import owners directly. The principal and supporting cases are:
 
-- [MixedHead](theories/Examples/MixedHead/Protocol.v): the flagship
-  mixed Ret/Vis, whole-continuation coupling example;
+- [AdaptiveFactoryController](theories/Examples/AdaptiveFactoryController.v):
+  the principal stateful, interactive component-replacement proof;
 - [RandomWalk](theories/Examples/PGCL/RandomWalk.v): pGCL forward semantics and infinite-state descent,
   compositional equations and an analytic joint output law;
+- [MixedHead](theories/Examples/MixedHead/Protocol.v): the appendix
+  mixed Ret/Vis, whole-continuation coupling example;
 - [InteractiveVonNeumann](theories/Examples/InteractiveVonNeumann/):
   unbounded internal sampling between infinitely many interactions;
 - [BernoulliFactory](theories/Examples/BernoulliFactory/):

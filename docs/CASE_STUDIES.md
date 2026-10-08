@@ -1,7 +1,9 @@
 # Reasoning with PTree: a case-study guide
 
 Start with the program you want to prove, not the implementation of the
-probability model. The gallery is broader than the paper's eventual selection.
+probability model. The gallery is broader than the paper's two principal cases:
+Adaptive and pGCL/RandomWalk. FactoryController supports execution and algebra;
+MixedHead supports the appendix's coupling/coinduction discussion.
 The [case-study standard](CASE_STUDY_STANDARD.md) governs presentation, not
 which proof method a case is allowed to use.
 
@@ -22,6 +24,51 @@ which proof method a case is allowed to use.
 These are complementary tools, not mutually exclusive proof modes. Rewriting
 handles algebraic transformations; it does not replace convergence analysis,
 coupling certificates or protocol invariants.
+
+## Paper theorem index
+
+This index follows the current manuscript's §2/§9.1 (Adaptive), §5.4/§9.2
+(iteration and RandomWalk), and supporting appendices. Names below are
+qualified relative to `PTree.Examples`; the linked source owns the statement.
+Program hypotheses and logical assumptions are different: the former appear
+in theorem types; the latter are recorded by the
+[compiled contracts](../tools/data/CONTRACT_SUITES.json) and explained in the
+[assumption guide](AUDITING.md#logical-assumptions-and-their-roles).
+
+| Paper role | Source endpoint | Hypotheses / meaning |
+|---|---|---|
+| Adaptive refinement | [`AdaptiveFactoryController.Adaptive.controller_refinement`](../theories/Examples/AdaptiveFactoryController.v) | Any initial private state, rational `0 ≤ q ≤ 1`; the two fixed source biases and concrete handler are definitions. Heterogeneous `state_result` hides state, not state/bit correlation. |
+| Adaptive calculation | `AdaptiveFactoryController.Adaptive.controller_program_rewrite` | Same parameters; the complete projected program calculation, not a call to the final refinement theorem. Uses `adaptive_factory_direct`, ultimately `raw_loop_fair`. |
+| Forward language semantics | [`PGCL.Forward.denote_spec`, `denote_while_unfold`](../theories/Examples/PGCL/Forward.v) | Backend-parametric kernel semantics; selected limits and algebra use the explicit probability profiles in their sections. No PTree or external model is needed to define `denotes`. |
+| Interpretation correspondence | [`PGCL.FreeOmega.pgcl_run_hitting`, `pgcl_run_denotes_iff`](../theories/Examples/PGCL/FreeOmega.v) | The native core/AE/countable-AE profile instantiates generic adequacy with observable FreeOmega. Exact return frontiers of State-interpreted programs, not merely one expectation. |
+| While leastness | `PGCL.FreeOmega.pgcl_while_least_fixed_point` | The native profile in `WhileOrder`; a quotient fixed-point equation and leastness among `⊑ω`-prefixed kernels. Neither AST nor an external model is a premise; arbitrary semantic-chain completeness is not claimed. |
+| RandomWalk instance | [`PGCL.RandomWalk.walk_source`, `walk_denote_least_fixed_point`, `walk_run`, `walk_classical_frontier`](../theories/Examples/PGCL/RandomWalk.v) | The source uses the fixed `2/3` coin. Its forward lfp is the complete return frontier of the interpreted and previously analysed PTree programs. |
+| Quantitative result | `PGCL.RandomWalk.walk_denote_closed_form` | Limit representation, finite-round observations, atomwise probability limits and normalization. The final infinite-support law is not a finite native sample. |
+
+For the concrete endpoints, `raw_loop_fair` and
+`walk_denote_least_fixed_point` currently use functional extensionality;
+`adaptive_factory_direct`, `controller_program_rewrite`, `controller_refinement`
+and `walk_forward` additionally inherit relational/dependent unique choice.
+`walk_denote_closed_form` is closed under the global context. None of these
+endpoints uses UIP or Gate M. These are audited dependencies of the current
+proofs, not claims that the assumptions are necessary.
+
+**Manuscript synchronization, not missing theory.** The read-only review of
+the sibling manuscript at `bfb14d4` found three remaining updates: §5.4 should distinguish internal
+FreeOmega `⊑ω` leastness from external validation; §9.2 and Appendix F's
+RandomWalk mapping should include the pGCL source/forward-semantics chain;
+§10 and Appendix F should replace the old raw-EnumQ FactoryController execution
+description with SubEnumQ. The simulator still has an unverified textual parser,
+host PRNG and fuel-free scheduler, and its integer store has no proved
+representation bridge to the pair-state RandomWalk. No manuscript file is
+maintained by this index.
+
+For the core theory behind these cases, follow
+[stable observations](THEORY.md#relations-and-stable-observations),
+[program algebra](THEORY.md#bind-and-rewriting) and
+[up-to rules](THEORY.md#coinduction-up-to-contexts), rather than backend proof
+internals. MixedHead's alternative proof below is appendix material, not a
+second principal case or a second special-purpose up-to technique.
 
 ## Reading entries and reusable results
 
@@ -63,8 +110,8 @@ that bridge preserves the original object rather than reconstructing its list.
 | [InteractiveVonNeumannService](../theories/Examples/InteractiveVonNeumann/InteractiveVonNeumannService.v) | `interactive_von_neumann_service_equivalent` | Up-to-bind consumes `service_sampler_equivalent`. `von_neumann_request_true_reply_trace_probability` supplies a quantitative interaction result. |
 | [MixedHead](../theories/Examples/MixedHead/Protocol.v) | Complete programs (§2), then the in-place compositional proof `masked_protocol_equivalent` (§4), with no bridge premise | A branching Boolean sampler versus a one-shot specification, related through finite stable hitting and up-to-bind. The same non-functional 3-to-2 joint abstracts heterogeneous Ret payloads and recursive Vis continuations. `masked_public_protocol_equivalent` erases the payload; `masked_challenge_true_reply_probability` retains the `3/8` and `1/8` queries. No execution endpoint is claimed. |
 | [FactoryController](../theories/Examples/FactoryController.v) | `Rewriting.factory_controller_program_rewrite` | Full sampler/handler calculation; `Observation.factory_next_action_probability`; concrete scripted/extraction entries. |
-| [RandomWalk](../theories/Examples/PGCL/RandomWalk.v) | `walk_source`, `walk_denote_least_fixed_point`, `walk_denote_closed_form`, `walk_forward` | pGCL source, classical semantic lfp, exact finite rounds and infinite-support output law. Passage/harmonic proofs are supporting [analysis](../theories/Examples/PGCL/RandomWalkAnalysis.v). The simulator's integer-store walk implements the same transition, without a proved representation bridge to this pair-state case. |
-| [AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v) | `Adaptive.controller_program_rewrite` | `loop_hits`, `raw_loop_fair`, `adaptive_factory_direct`, `controller_refinement`. Preserve correlated state; no new simulator/PRNG claim. |
+| [RandomWalk](../theories/Examples/PGCL/RandomWalk.v) | `walk_source`, `walk_denote_least_fixed_point`, `walk_forward`, `walk_denote_closed_form` | pGCL source, classical semantic lfp, exact finite rounds and infinite-support output law. Passage/harmonic proofs are supporting [analysis](../theories/Examples/PGCL/RandomWalkAnalysis.v). The simulator's integer-store walk implements the same transition, without a proved representation bridge to this pair-state case. |
+| [AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v) | `Adaptive.controller_refinement`, with its calculation in `controller_program_rewrite` | `lower_attempt_kernel`, `loop_hits`, `raw_loop_fair`, `adaptive_factory_direct`. Preserve correlated state; no new simulator/PRNG claim. |
 
 For an appendix-oriented alternative to MixedHead's in-place proof, read
 [`UpTo.v`](../theories/Examples/MixedHead/UpTo.v):
@@ -425,7 +472,8 @@ the algorithm. See [Execution](EXECUTION.md) for runtime trust limits.
 
 [AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v)
 adds persistent state changes between failed attempts. In namespace `Adaptive`,
-read `controller_program_rewrite`, with `adaptive_factory_direct` and
+start with the claim `controller_refinement`, then read its full calculation
+in `controller_program_rewrite`, with `adaptive_factory_direct` and
 `raw_loop_fair` as component endpoints. The selected backend is SubEnumQ;
 raw EnumQ belongs only to finite analysis. Bit observations and relational
 support suffice: there is no artificial requirement to solve for an explicit
