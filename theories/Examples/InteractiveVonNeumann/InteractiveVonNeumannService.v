@@ -32,6 +32,7 @@ From PTree.Eq.Backend Require Import ProbabilisticTraceEnumQ.
 From PTree.Eq Require Import ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Interp.FreeOmega Require Import Rewriting.
 From PTree.Prob.FreeOmega Require Import BindOrder.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded OperationalVonNeumann.
 From ExtLib.Structures Require Import Monad.
@@ -44,6 +45,7 @@ Unset Printing Implicit Defensive.
 
 Import EnumQ.
 Import MonadNotation.
+Import FreeOmegaRewriting.
 Local Open Scope monad_scope.
 Local Open Scope freeomega_scope.
 Import PTree.Prob.Backend.EnumQ.Map.
@@ -256,12 +258,10 @@ Lemma serve_round_congruence
     (Hnext : next1 ≈ₚ next2) :
   serve_round sampler1 next1 ≈ₚ serve_round sampler2 next2.
 Proof.
-  unfold serve_round.
-  apply peutt_vis. intros [].
-  eapply peutt_bind.
-  - exact Hsampler.
-  - intros b1 b2 ->. unfold publish.
-    apply peutt_vis. intros []. exact Hnext.
+  unfold serve_round, publish.
+  setoid_rewrite Hsampler.
+  setoid_rewrite Hnext.
+  reflexivity.
 Qed.
 
 Local Definition service_kernel {R} :
@@ -441,10 +441,10 @@ Qed.
 Lemma after_request_peutt : vn_after_request ≈ₚ direct_after_request.
 Proof.
   unfold vn_after_request, direct_after_request.
-  eapply peutt_bind.
-  - exact service_sampler_equivalent.
-  - intros b1 b2 ->. apply peutt_vis. intros [].
-    exact interactive_von_neumann_service_equivalent.
+  setoid_rewrite service_sampler_equivalent.
+  unfold publish.
+  setoid_rewrite interactive_von_neumann_service_equivalent.
+  reflexivity.
 Qed.
 
 (** The implementation's unbounded retry loop has the same quantitative
