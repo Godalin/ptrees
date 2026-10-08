@@ -12,6 +12,8 @@ Local Unset Universe Minimization ToSet.
 From mathcomp Require Import reals.
 From PTree Require Import PTree PTreeFacts.
 From PTree.Eq.Backend Require Import SubEnumR.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 Set Implicit Arguments.
 
 Variant sourceE : Type → Type := Sample : sourceE bool.
@@ -46,9 +48,8 @@ Example real_handler_bind_client :
   bind (interp sampling service) (λ _, Ret true) ≈ₚ
   bind (interp sampling_delay service) (λ _, Ret true).
 Proof.
-  eapply peutt_bind with (RR := eq).
-  - apply real_infinite_sampling.
-  - intros x y ->. apply peutt_refl.
+  setoid_rewrite real_infinite_sampling.
+  reflexivity.
 Qed.
 
 Example real_right_identity :

@@ -20,6 +20,9 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure RelationalLimit.
 Require PTree.Interp.FreeOmega.State.
 From PTree.Eq.FreeOmega Require Import Relation.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+From PTree.Interp.Algebra Require Import State.
+Import FreeOmegaRewriting.
 From PTree.Examples Require Import StateCounter.
 From PTree.Execution Require Import Runner.
 From PTree.Execution.Backend Require Import SubEnumQ.
@@ -43,13 +46,8 @@ Example weak_source_preserved {A B} (RR : A → B → Prop) s
   W _ _ _ RR t u → W _ _ _ (state_result_rel RR) (run_state t s) (run_state u s).
 Proof. apply PTree.Interp.FreeOmega.State.run_state_peutt. Qed.
 
-#[local] Instance state_interp_Proper A :
-  Proper (W (stateE S +' E) A A eq ==> eq ==> W E (S*A) (S*A) eq) (@run_state S E SubEnumQ A).
-Proof.
-  apply (StatePreservation.run_state_peutt_eq_Proper free_omega_relational_bind
-    free_omega_relational_zero free_omega_relational_lub).
-Qed.
-
+(** The opt-in library registration supplies State congruence; no local
+    copy of the generic Proper proof is needed. *)
 Example actual_state_setoid_rewrite s (t u : ptree (stateE S +' E) SubEnumQ nat)
     (H : W _ _ _ eq t u) : W _ _ _ eq (run_state t s) (run_state u s).
 Proof. setoid_rewrite H. apply peutt_refl. Qed.
@@ -57,13 +55,13 @@ Proof. setoid_rewrite H. apply peutt_refl. Qed.
 Example get_is_eliminated {A} (k : S → ptree (stateE S +' E) SubEnumQ A) s :
   W _ _ _ eq (run_state (Vis (inl1 (Get S)) k) s) (run_state (k s) s).
 Proof.
-  eapply peutt_trans; [apply peutt_of_pstruct; apply run_state_get|apply peutt_tau_l].
+  apply state_get_step.
 Qed.
 
 Example put_is_eliminated {A} (k : unit → ptree (stateE S +' E) SubEnumQ A) s s' :
   W _ _ _ eq (run_state (Vis (inl1 (Put S s')) k) s) (run_state (k tt) s').
 Proof.
-  eapply peutt_trans; [apply peutt_of_pstruct; apply run_state_put|apply peutt_tau_l].
+  apply state_put_step.
 Qed.
 
 Example state_bind_algebra {A B} (t : ptree (stateE S +' E) SubEnumQ A)
@@ -91,7 +89,7 @@ Qed.
 
 Example retry_source_weak_rewrite s :
   W _ _ _ eq (run_state (Tau count_until_success) s) (run_state count_until_success s).
-Proof. apply PTree.Interp.FreeOmega.State.run_state_peutt_eq. apply peutt_tau_l. Qed.
+Proof. setoid_rewrite (peutt_tau_l (MF := MF) count_until_success). reflexivity. Qed.
 
 Definition put_then_get : ptree (stateE nat +' void1) SubEnumQ nat :=
   Vis (inl1 (Put nat 9)) (λ _, Vis (inl1 (Get nat)) (λ s, Ret s)).

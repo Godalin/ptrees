@@ -17,6 +17,8 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 From PTree.Eq Require Import PStruct PStrong PEutt ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -132,9 +134,8 @@ Lemma tau_prob_divergent_branch (mu : SubEnumQ bool) :
   W (Prob mu (λ b : bool, Tau (if b then Ret true else hierarchy_spin)))
     (Prob mu (λ b : bool, if b then Ret true else hierarchy_spin)).
 Proof.
-  eapply peutt_prob with (XR := eq).
-  - apply sem_lift_refl. intro b. reflexivity.
-  - intros b b' ->. apply peutt_tau_l.
+  setoid_rewrite (peutt_tau_l (MF := MF)).
+  reflexivity.
 Qed.
 
 Lemma tau_bind_context_rewrite
@@ -142,12 +143,15 @@ Lemma tau_bind_context_rewrite
     (k : bool → ptree hierarchyE SubEnumQ bool) :
   W (PTree.bind (Tau t) (λ x, Tau (k x))) (PTree.bind t k).
 Proof.
-  apply peutt_bind_Proper.
-  - apply peutt_tau_l.
-  - intro x. apply peutt_tau_l.
+  setoid_rewrite (peutt_tau_l (MF := MF)).
+  reflexivity.
 Qed.
 
 Lemma tau_fmap_context_rewrite (f : bool → bool)
     (t : ptree hierarchyE SubEnumQ bool) :
   W (PTree.fmap f (Tau t)) (PTree.fmap f t).
-Proof. apply peutt_fmap_Proper, peutt_tau_l. Qed.
+Proof.
+  unfold PTree.fmap.
+  setoid_rewrite (peutt_tau_l (MF := MF) t).
+  reflexivity.
+Qed.

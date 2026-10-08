@@ -19,6 +19,8 @@ From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure RelationalLimit.
 Require PTree.Interp.FreeOmega.Unrestricted.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 From PTree.Examples Require Import StateCounter.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -66,14 +68,7 @@ CoFixpoint forever_ask : ptree (readerE bool +' E) SubEnumQ unit :=
 Example infinitely_many_eliminated_events env :
   W _ _ _ eq (PTree.interp_tree (reader_handler env) (Tau forever_ask))
     (PTree.interp_tree (reader_handler env) forever_ask).
-Proof. apply heterogeneous_elimination. apply peutt_tau_l. Qed.
-
-#[local] Instance reader_interp_Proper env A :
-  Proper (W (readerE bool +' E) A A eq ==> W E A A eq)
-    (@PTree.interp_tree _ _ _ (reader_handler env) A).
-Proof.
-  apply (Unrestricted.peutt_interp_Proper free_omega_relational_zero free_omega_relational_lub).
-Qed.
+Proof. setoid_rewrite (peutt_tau_l (MF := MF) forever_ask). reflexivity. Qed.
 
 Example eliminating_setoid_rewrite env (t u : ptree (readerE bool +' E) SubEnumQ nat)
     (H : W _ _ _ eq t u) :

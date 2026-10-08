@@ -72,6 +72,9 @@ Example probability_algebra_inside_iteration :
 Proof.
   apply free_omega_peutt_iter_eventful. intro i.
   apply peutt_vis. intro b.
+  (* Both continuations return immediately. Keeping these explicit witnesses
+     avoids the choice of arbitrary continuation frontiers used by the
+     general [peutt_prob_ret] law. *)
   eapply peutt_of_hitting_lift.
   - eapply stable_hitting_prob with (Good := λ _, True)
       (front := λ c : bool, sem_ret (FHRet (if c then inr true else inl tt))).

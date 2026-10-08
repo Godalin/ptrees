@@ -69,8 +69,8 @@ Proof.
   change (run_writer_from log_op
     (Vis (inl1 (Tell [1])) (λ _, Vis (inl1 (Tell [2])) (λ _, Ret tt))) [] ≈ₚ
       (Ret ([1;2],tt) : ptree void1 SubEnumQ (list nat * unit))).
-  eapply peutt_trans; [apply run_writer_from_tell|].
-  eapply peutt_trans; [apply run_writer_from_tell|].
+  setoid_rewrite run_writer_from_tell.
+  setoid_rewrite run_writer_from_tell.
   apply peutt_observe_eq. reflexivity.
 Qed.
 
