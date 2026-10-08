@@ -125,12 +125,12 @@ Proof.
     third_bias_normalized third_bias_nontrivial).
 Qed.
 
-(** A behavioral regression: inserting an internal delay in the sampler
-    preserves the whole loop, even though the sampler syntax changes. *)
+(** Rewrite inside the whole factory, using its registered sampler context.
+    An internal delay changes syntax, not the behavior of the loop. *)
 Example factory_sampler_tau_regression q :
   peutt eq (factory_with_sampler (Tau factory_direct_fair) q)
     (factory_with_sampler factory_direct_fair q).
 Proof.
-  apply peutt_factory_sampler_congr.
-  apply peutt_tau_l.
+  setoid_rewrite (peutt_tau_l (MF := MF) factory_direct_fair).
+  reflexivity.
 Qed.
