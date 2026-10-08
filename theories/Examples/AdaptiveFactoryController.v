@@ -1,17 +1,20 @@
-(** Case role: paper case study.
-    Reading entry: Adaptive.controller_program_rewrite.
-    Native/frontier: SubEnumQ / observable FreeOmega; all primitive draws total.
-    Internal effects are interpreted into State, then State is threaded out.
-    State is NOT reset between attempts, factory iterations or requests.
-    See docs/CASE_STUDIES.md#factory-controllers for the proved contract and boundaries. *)
-(** Learn: handler algebra, complete-round analysis, then relational protocol refinement.
-    Reusable endpoints: Adaptive.loop_hits, raw_loop_fair, adaptive_factory_direct, controller_refinement.
-    Boundary: successful state and bit remain correlated; no new execution claim.
-    User navigation: docs/CASE_STUDIES.md. *)
-(** Reading order: 1. Setup; 2. Programs; 3. Analysis and component equations;
-    4. Full-program calculation; 5. Reusable consequences.
-    For the algebraic story, read [adaptive_factory_direct] and then
-    [controller_program_rewrite]. The finite/limit analysis stays in §3. *)
+(** Principal case study: adaptive sampling inside a persistent service.
+
+    Paper entry: [Adaptive.controller_refinement] (the heterogeneous claim).
+    Its complete program calculation is [controller_program_rewrite], not
+    a second proof hidden behind the final theorem. Read the three stages:
+
+    1. [lower_attempt] -> [lower_attempt_kernel]: interpret one attempt.
+    2. [attempts_symmetric], [adaptive_pending_bound], [output_row_converges]
+       -> [raw_loop_fair]: analyse state-dependent retries and relate heads.
+    3. [adaptive_factory_direct] -> [controller_program_rewrite]
+       -> [controller_refinement]: replace components inside interaction.
+
+    Native/frontier: SubEnumQ / observable FreeOmega; primitive draws total.
+    State persists between attempts, factory rounds and requests. Successful
+    state and bit may be correlated; [output_related] and [state_result]
+    hide state only at the result interface. No new execution claim.
+    See docs/CASE_STUDIES.md#paper-theorem-index for assumptions and mapping. *)
 From Coq Require Import Utf8.
 
 Set Warnings "-notation-overridden,-ambiguous-paths".
@@ -148,6 +151,11 @@ Definition internal_handler X (e : implE X) : ptree targetE SubEnumQ X :=
     end
   end.
 
+(** Internal view of interpretation, retained for productive program execution.
+    [FoldPTree.interp_ptree_agrees] connects public [interp] to [interp_tree];
+    [StateFoldFacts.interp_state_run_state] connects the StateT view to
+    [run_state] under iteration uniformity. These are library agreements,
+    not extra premises of the concrete controller theorem below. *)
 Definition lower {A} (t : tree A) s := run_state (PTree.interp_tree internal_handler t) s.
 
 (** [src] is bound before either sample; changing health between them cannot
@@ -211,8 +219,8 @@ Proof.
   unfold lower.
   setoid_rewrite peutt_interp_bind.
   apply peutt_of_pstruct.
-  exact (@run_state_bind machine_state publicE SubEnumQ A B
-    (PTree.interp_tree internal_handler t) (λ x, PTree.interp_tree internal_handler (k x)) s).
+  exact (run_state_bind (PTree.interp_tree internal_handler t)
+    (λ x, PTree.interp_tree internal_handler (k x)) s).
 Qed.
 
 Lemma lower_prob {A X} (mu : SubEnumQ X) (k : X → tree A) s :
@@ -248,8 +256,7 @@ Proof.
   unfold lower.
   setoid_rewrite peutt_interp_iter.
   apply peutt_of_pstruct.
-  exact (@run_state_iter machine_state I A publicE SubEnumQ
-    (λ i, PTree.interp_tree internal_handler (step i)) i s).
+  exact (run_state_iter (λ i, PTree.interp_tree internal_handler (step i)) i s).
 Qed.
 
 Lemma lower_public {X} (e : publicE X) s :
@@ -940,8 +947,26 @@ Proof.
     reflexivity.
 Qed.
 
-(** 5. Reusable consequences. The state-returning interfaces remain available;
-    they are not used as shortcuts in the calculation above. *)
+(** Paper refinement endpoint. The calculation above hides state by a final
+    projection; relational composition recovers the heterogeneous interface.
+    In particular, this does not require state/bit independence. *)
+
+Theorem controller_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
+  lower (controller q) s ≈ₚ[state_result] controller_spec q0 q1.
+Proof.
+  eapply peutt_rel_compose with (R12 := state_result) (R23 := eq).
+  - intros x y z H ->.
+    exact H.
+  - rewrite <- (peutt_bind_ret_r (lower (controller q) s)) at 1.
+    eapply peutt_bind with (RR := eq); [reflexivity|].
+    intros sa sa' ->.
+    apply peutt_ret.
+    reflexivity.
+  - apply controller_program_rewrite.
+Qed.
+
+(** 5. Supporting one-request consequence. It is not used as a shortcut
+    in the persistent controller calculation above. *)
 
 Theorem service_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
   lower (serve_request q) s ≈ₚ[state_result] serve_spec q0 q1.
@@ -960,20 +985,6 @@ Proof.
   intros [].
   apply peutt_ret.
   reflexivity.
-Qed.
-
-Theorem controller_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
-  lower (controller q) s ≈ₚ[state_result] controller_spec q0 q1.
-Proof.
-  eapply peutt_rel_compose with (R12 := state_result) (R23 := eq).
-  - intros x y z H ->.
-    exact H.
-  - rewrite <- (peutt_bind_ret_r (lower (controller q) s)) at 1.
-    eapply peutt_bind with (RR := eq); [reflexivity|].
-    intros sa sa' ->.
-    apply peutt_ret.
-    reflexivity.
-  - apply controller_program_rewrite.
 Qed.
 
 End Adaptive.
