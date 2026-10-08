@@ -282,24 +282,7 @@ Theorem lower_attempt s :
   Prob (source_coin (health s)) (λ a,
     Prob (source_coin (health s)) (λ b, Ret (state_attempt_result s a b))).
 Proof.
-  (* Local equations for the update and the final retry branch. Rewriting
-     uses congruence beneath both samples; their continuations stay implicit. *)
-  have Hupdate f s' : lower (update f) s' ≈ₚ Ret (f s',tt).
-  { repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-    apply peutt_observe_eq.
-    reflexivity. }
-  have Hfinish s' (a b : bool) :
-      lower (if a == b then internal Retry;; Ret (inl tt) else Ret (inr a)) s' ≈ₚ
-      Ret (if a == b then (retry_update s', inl tt) else (s', inr a)).
-  { destruct (a == b).
-    - setoid_rewrite lower_bind.
-      setoid_rewrite lower_internal.
-      setoid_rewrite peutt_bind_ret_l.
-      setoid_rewrite lower_ret.
-      reflexivity.
-    - setoid_rewrite lower_ret.
-      reflexivity. }
-
+  (* Select the source once, before either draw. *)
   unfold vn_attempt, sample.
   setoid_rewrite lower_bind.
   setoid_rewrite lower_internal.
@@ -314,14 +297,35 @@ Proof.
   setoid_rewrite lower_internal.
   setoid_rewrite peutt_bind_ret_l.
   setoid_rewrite lower_bind.
+
+  (* Interpret the sensor update here, beneath the first sample. *)
+  have Hupdate f s' : lower (update f) s' ≈ₚ Ret (f s',tt).
+  { repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
+    apply peutt_observe_eq.
+    reflexivity. }
   setoid_rewrite Hupdate.
   setoid_rewrite peutt_bind_ret_l.
 
+  (* Draw from the same source, carrying the updated state. *)
   setoid_rewrite lower_bind.
   setoid_rewrite lower_prob.
   setoid_rewrite peutt_bind_prob.
   setoid_rewrite lower_ret.
   setoid_rewrite peutt_bind_ret_l.
+
+  (* Decide retry/success in place. A local equation lets congruence carry
+     the branch calculation beneath both samples without opening them. *)
+  have Hfinish s' (a b : bool) :
+      lower (if a == b then internal Retry;; Ret (inl tt) else Ret (inr a)) s' ≈ₚ
+      Ret (if a == b then (retry_update s', inl tt) else (s', inr a)).
+  { destruct (a == b).
+    - setoid_rewrite lower_bind.
+      setoid_rewrite lower_internal.
+      setoid_rewrite peutt_bind_ret_l.
+      setoid_rewrite lower_ret.
+      reflexivity.
+    - setoid_rewrite lower_ret.
+      reflexivity. }
   setoid_rewrite Hfinish.
   reflexivity.
 Qed.
@@ -848,6 +852,9 @@ Qed.
 
 Definition factory_states (si : machine_state * rat) q := snd si = q.
 
+(** The existing factory theorem has an empty event signature. Keep its
+    transport to [publicE] here, so the controller calculation consumes the
+    component equation without replaying these interpreter laws. *)
 Lemma fair_factory_direct q (q0 : 0 <= q) (q1 : q <= 1) :
   factory_with_sampler fair_tree q ≈ₚ
     sample (bernoulli q0 q1).
@@ -923,10 +930,11 @@ Proof.
       setoid_rewrite lower_ret.
       repeat setoid_rewrite peutt_bind_assoc.
 
-      (* Distribute sequencing through events/sampling, then discharge Ret. *)
-      repeat first [setoid_rewrite peutt_bind_vis
-                   |setoid_rewrite peutt_bind_prob
-                   |setoid_rewrite peutt_bind_ret_l].
+      (* Expose Request/Emit, distribute the specification's sample bind,
+         then remove the immediate return binds. *)
+      repeat setoid_rewrite peutt_bind_vis.
+      setoid_rewrite peutt_bind_prob.
+      repeat setoid_rewrite peutt_bind_ret_l.
       apply peutt_vis.
       intros [].
 

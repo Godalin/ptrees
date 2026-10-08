@@ -156,6 +156,12 @@ example、shared analysis、execution demo 或 regression-like example，
   明确作用；不保留已验证可去掉的机械整形步骤。
 - 局部断言应是一条有意义的程序等式或 pointwise relation，而非
   单纯为穿过又一层包装再重复一遍当前目标。
+- 优先在完整程序的局部子项上直接重写；一次性的短计算先尝试在
+  使用处展开、分支和化简，不预先包装成全局 `*_rewrite` / `*_congr`
+  或临时的完整程序等价。若内联导致重复展开、复杂依赖匹配或使
+  主线更难读，则保留局部等式，不为删除 helper 增加 Ltac 魔法。
+- 重写顺序有意义时显式列出所用定律；只有确实需要遍历嵌套结构时
+  才使用 `repeat`，避免宽泛的规则搜索掩盖实际变换。
 - 主证明可用 `intros`、分情况、`reflexivity`、少量 side-condition
   tactics；不要把 tactic 词频当作代数化程度。
 - 涉及循环体/continuation 的改写优先使用 pointwise relation，
@@ -177,7 +183,13 @@ coinduction 或 relational closure，应把真实的结构条件说清楚；不�
 | 有限分布计算 | expectation / measure / distribution equality；正常数学计算 | 本例或已有分布库 |
 | 无限概率分析 | 收敛、质量、hitting、coupling 等准确端点；允许 induction/coinduction/analysis | 本例分析区或共享分析库 |
 
-本例的小代数引理应尽量可独立作为 rewrite rule 使用：方向清楚、侧条件
+只包装几次通用重写、且仅用一次的计算优先在使用处完成。循环体的局部
+pointwise certificate 可以保留，供已有 congruence 将重写提升到迭代。
+真正的 State-threading 方程、事件解释、signature transport、coupling
+或极限桥接不能仅按“使用次数”删除；若内联会打断主线，保留其语义边界。
+不为单个 case 再造已有的 Proper、handler 同余或事件签名搬运接口。
+
+确需保留的小代数引理应尽量可独立作为 rewrite rule 使用：方向清楚、侧条件
 自然、结果关系明确。不要套多层近乎同义的 lemma；不要把整个主定理
 搬到名为 `helper` 的引理里。
 

@@ -18,7 +18,7 @@ From PTree Require Import PTreeFacts.
 From PTree.Eq.Backend Require Import SubEnumQ.
 From PTree.Eq Require Import PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Relation Hitting.
-From PTree.Prob.Interface Require Import Measure Omega KleisliIteration.
+From PTree.Prob.Interface Require Import Measure Mixed Omega KleisliIteration.
 From PTree.Prob.Backend.Common Require Import FiniteSubdist.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
@@ -90,9 +90,12 @@ Proof.
      else ηₘ s) ≈ₘ walk_functional Y s).
   { intros Y s. unfold walk_functional. destruct (Nat.eqb (fst s) 0).
     - apply sem_eq_refl.
-    - apply FOQLSample with (T := eq).
-      + apply sem_lift_refl. intro b; reflexivity.
-      + intros x y ->. destruct y; apply free_omega_qlift_refl; intro a; reflexivity. }
+    - (* Choice followed by continuation: distribute bind, then evaluate
+         either assignment using the generic mixed/measure algebra. *)
+      eapply sem_eq_trans; [apply mixed_bind_assoc|].
+      apply (mixed_bind_ae_proper (FI := FI) (MX := FreeOmegaMixedMeasure)).
+      eapply sem_ae_mono; [|apply sem_ae_true].
+      intros [] _; apply sem_bind_ret_l. }
   destruct (pgcl_while_least_fixed_point (S := rw_state)
     (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
     walk_coin (λ s, negb (Nat.eqb (fst s) 0))
