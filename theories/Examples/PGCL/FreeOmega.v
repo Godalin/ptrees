@@ -1,7 +1,16 @@
 (** Exact forward semantics of the State-effect frontend, for any native
     backend with the maintained FreeOmega profile. This is an instance of
     the generic proofs, not a second language semantics. No validation
-    model participates in this development. *)
+    model participates in this development.
+
+    Paper-facing endpoints:
+    - [pgcl_run_hitting]: the forward kernel is the whole return frontier;
+    - [pgcl_run_denotes_iff]: relational forward semantics iff exact hitting;
+    - [pgcl_while_least_fixed_point]: unfolding equality and leastness under
+      [⊑ω], without assuming arbitrary semantic-chain completeness.
+
+    Completion and WhileOrder record their own native capability profiles.
+    RandomWalk.v consumes these results; it does not repeat adequacy/lfp proofs. *)
 From Coq Require Import Utf8 Morphisms.
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.

@@ -1,6 +1,14 @@
-(** Classical source-language form of the maintained random walk. The proof
-    reuses its control flow and infinite-support analysis; no second harmonic
-    or convergence development is introduced here. *)
+(** Principal quantitative case: pGCL source -> forward lfp -> PTree -> law.
+
+    Read [walk_source], [walk_denote_least_fixed_point], [walk_forward] and
+    [walk_denote_closed_form], in that order. [walk_run] and
+    [walk_classical_frontier] identify the already analysed PTree program.
+
+    The source semantics is backend-parametric; this case selects SubEnumQ
+    and observable FreeOmega. Leastness uses the internal preorder [⊑ω],
+    not an external validating model or the structural approximation order.
+    Passage, harmonic and convergence proofs stay in RandomWalkAnalysis.v.
+    The output has infinite support; no finite native limit is asserted. *)
 From Coq Require Import Utf8 Arith.
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum rat.
@@ -28,6 +36,7 @@ Local Open Scope pgcl_scope.
 Local Open Scope pgcl_denotation_scope.
 Set Implicit Arguments.
 
+(** 1. Source program. A probability label selects the native coin. *)
 Definition walk {P} (downward : P) : command rw_state P :=
   WHILE (λ s, negb (Nat.eqb (fst s) 0)) DO
     (UPDATE (λ s, (Nat.pred (fst s), S (snd s))))
@@ -59,9 +68,8 @@ Proof.
     + apply observe_eq_pstruct. reflexivity.
 Qed.
 
-(** The following section reasons directly about the source denotation.
-    Round zero already observes an absorbing state; hence these finite
-    observations are the S n (not n) Kleisli approximants. *)
+(** 2. Forward semantics and leastness. Instantiate the language's while
+    theorem; the local equation only exposes this program's two updates. *)
 Local Notation D := (denote (FI := FI) (FO := FO) walk_coin).
 
 (** The classical forward functional: absorb at height zero, otherwise
@@ -95,6 +103,46 @@ Proof.
   - intros Y HY. apply Hleast. intro s.
     eapply free_omega_sem_le_trans; [apply free_omega_sem_eq_le, Hstep|apply HY].
 Qed.
+
+(** 3. State-interpreted PTree. Generic adequacy gives the whole frontier;
+    the structural compilation equation connects the existing walk analysis. *)
+
+Theorem walk_run :
+  run (E := rwE) walk_coin walk_source (1%nat,0%nat) ≈ₚ random_walk.
+Proof.
+  rewrite (run_execute free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
+  apply peutt_of_pstruct. apply walk_execute.
+Qed.
+
+(** The forward denotation is the whole final subdistribution, not a finite
+    native representation and not a weakest-precondition observation. *)
+Theorem walk_forward :
+  ptree_stable_hitting (FI := FI) (FO := FO)
+    (observe (run (E := rwE) walk_coin walk_source (1%nat,0%nat)))
+    (iteration_return_map (E := rwE) (MN := SubEnumQ)
+      (denote (FI := FI) (FO := FO) walk_coin walk_source (1%nat,0%nat))).
+Proof. apply pgcl_run_hitting. Qed.
+
+(** The already analysed PTree itself has this classical forward frontier.
+    Its established infinite-support observations thus refer to the same
+    whole-distribution semantics, rather than to a new walk implementation. *)
+Theorem walk_classical_frontier :
+  ptree_stable_hitting (FI := FI) (FO := FO) (observe random_walk)
+    (iteration_return_map (E := rwE) (MN := SubEnumQ)
+      (denote (FI := FI) (FO := FO) walk_coin walk_source (1%nat,0%nat))).
+Proof.
+  eapply peutt_hitting_ret_only.
+  - apply peutt_sym. exact walk_run.
+  - exact walk_forward.
+  - unfold iteration_return_map. eapply free_omega_ae_bind.
+    + apply (sem_ae_true (SI := FI)).
+    + intros s _. constructor. exists s. reflexivity.
+Qed.
+
+(** 4. Quantitative law. Reuse the analysis through finite observations.
+    Round zero already observes an absorbing state, hence the S n shift
+    relative to the classical bottom-started Kleisli approximants. *)
 
 Definition walk_round n s :=
   sem_iter_approx (MI := FI)
@@ -141,37 +189,4 @@ Proof.
   split; first apply walk_denote_rounds.
   split; first (intro n; apply walk_round_observes).
   split; [apply random_walk_output_dist|apply joint_pmf_normalized].
-Qed.
-
-Theorem walk_run :
-  run (E := rwE) walk_coin walk_source (1%nat,0%nat) ≈ₚ random_walk.
-Proof.
-  rewrite (run_execute free_omega_relational_mixed_bind
-    free_omega_relational_zero free_omega_relational_lub).
-  apply peutt_of_pstruct. apply walk_execute.
-Qed.
-
-(** The forward denotation is the whole final subdistribution, not a finite
-    native representation and not a weakest-precondition observation. *)
-Theorem walk_forward :
-  ptree_stable_hitting (FI := FI) (FO := FO)
-    (observe (run (E := rwE) walk_coin walk_source (1%nat,0%nat)))
-    (iteration_return_map (E := rwE) (MN := SubEnumQ)
-      (denote (FI := FI) (FO := FO) walk_coin walk_source (1%nat,0%nat))).
-Proof. apply pgcl_run_hitting. Qed.
-
-(** The already analysed PTree itself has this classical forward frontier.
-    Its established infinite-support observations thus refer to the same
-    whole-distribution semantics, rather than to a new walk implementation. *)
-Theorem walk_classical_frontier :
-  ptree_stable_hitting (FI := FI) (FO := FO) (observe random_walk)
-    (iteration_return_map (E := rwE) (MN := SubEnumQ)
-      (denote (FI := FI) (FO := FO) walk_coin walk_source (1%nat,0%nat))).
-Proof.
-  eapply peutt_hitting_ret_only.
-  - apply peutt_sym. exact walk_run.
-  - exact walk_forward.
-  - unfold iteration_return_map. eapply free_omega_ae_bind.
-    + apply (sem_ae_true (SI := FI)).
-    + intros s _. constructor. exists s. reflexivity.
 Qed.

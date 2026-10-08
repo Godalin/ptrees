@@ -1,7 +1,12 @@
 (** Backend-parametric forward semantics. This file contains no PTree and
     no external validating model. A denotation is a whole state kernel;
     while uses the existing absorbing Kleisli iteration relation.
-    No chosen omega-limit is needed to state the semantics. *)
+    No chosen omega-limit is needed to state the semantics.
+
+    Reading path: [denotes] specifies kernels; [denote_spec] validates a
+    selected representative; [denote_while_unfold] gives its unfolding law.
+    FreeOmega.v supplies internal semantic-order leastness and the connection
+    to State-interpreted PTree programs. RandomWalk.v is the concrete client. *)
 From Coq Require Import Utf8.
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
