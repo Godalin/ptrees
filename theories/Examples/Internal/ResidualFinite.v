@@ -188,7 +188,7 @@ Proof.
   intro H. destruct H.
   - apply peutt_refl.
   - apply residual_retries_peutt.
-  - eapply peutt_trans; [apply peutt_tau_l|].
-    eapply peutt_trans; [apply residual_retries_peutt|].
-    apply peutt_sym. eapply peutt_trans; apply peutt_tau_l.
+  - setoid_rewrite (peutt_tau_l (MF := FreeOmega SubEnumQ)).
+    setoid_rewrite (peutt_tau_l (MF := FreeOmega SubEnumQ)).
+    exact residual_retries_peutt.
 Qed.

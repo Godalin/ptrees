@@ -15,6 +15,8 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import PStruct PStrong PEutt UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Relation Bind Algebra Iter Hitting.
 From PTree.Interp.FreeOmega Require Import AbsorbingIteration.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
@@ -88,8 +90,7 @@ Example real_crossed_infinite_service :
     (PTree.bind (Prob sqrt_coin (λ b, Ret b)) real_service)
     (PTree.bind (Prob (subenumR_map negb sqrt_coin) (λ b, Ret (negb b))) real_service).
 Proof.
-  eapply (PTree.Eq.Bind.peutt_bind (MF := MF) (FI := FI) (FO := FO)) with (RR := eq).
-  - apply real_crossed_sample_peutt.
-  - intros x y ->; apply peutt_refl; intro z; reflexivity.
+  setoid_rewrite real_crossed_sample_peutt.
+  reflexivity.
 Qed.
 End Completion.
